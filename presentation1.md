@@ -1,4 +1,4 @@
-# Presentation 1
+# Presentation
 
 ## 1. The dataset
 The dataset that we have used consist of 1 million final positions of completed 7x7 hex games. Each row consist of a position and the winner. Example:
@@ -18,7 +18,7 @@ The dataset can be represented as a 2-dimensional array whereas entries 0 to 6 c
  [ 1  1  0  1  0  0  1]
  [ 1  1  1  0 -1 -1 -1]]
 ```
-## 3. Booleanizing the matrix
+## 3. Booleanization
 As we can see, each entry in the matrix can contain values -1, 0 and 1, so how can we booleanize it? A boolean can only be False or True, 0 or 1. One way to do that is to expand the matrix with additional values. (Idea from Playing the game of Hex with the
 Tsetlin Machine and tree search
 Audun Linjord Simonsen
@@ -34,5 +34,8 @@ Ole Andr´e Haddelands masters thesis). So our 7x7 matrix now becomes a 7x14 mat
  [0. 0. 0. 0. 1. 1. 1. 1. 1. 1. 0. 0. 0. 0.]]
 ```
 
+The board can also be represented in 3 dimensions 2x7x7:
+![alt text](./3dboard.png)
+
 ## 4. Using the graph tsetlin machine to learn
-Now that we have booleanized the position, we can use the graph tsetlin machine to try and learn something from it. We modified the example in MNISTConvolutionDemo.py to make it work. (Show [code](./hexgameV1.py) and demo)
+Now that we have booleanized the position, we can use the graph tsetlin machine to try and learn something from it. We modified the example in MNISTConvolutionDemo.py to make it work. (Show [code for 2d](./hexgameV1.py) and [code for 3d](./hexgameV2.py), and maybe a demo?).

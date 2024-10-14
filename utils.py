@@ -17,7 +17,7 @@ def load_dataset(file_name, num_rows = None):
     with open(Path(__file__).parent / "dataset" / file_name) as file:
         file.readline() # Read and ignore line containing headers
         positions = []
-        results = []
+        winners = []
         for line_number, line in enumerate(tqdm(file, desc = "Loading dataset", unit = "Rows", total = num_rows)):
             position = [[0 for i in range(7)] for j in range(7)]
             entries = line.split(",")
@@ -26,13 +26,13 @@ def load_dataset(file_name, num_rows = None):
                 x = i % 7
                 position[y][x] = entries[i]
             
-            results.append(entries[49])
+            winners.append(entries[49])
             positions.append(position)
             
             if (line_number+1) == num_rows:
                 break
             
-        return np.array(positions, dtype=np.int8), np.array(results, dtype=np.int8)
+        return np.array(positions, dtype=np.int8), np.array(winners, dtype=np.int8)
 
 def display_position(position):
     img = np.full((250, 400, 3), 255)
@@ -195,6 +195,9 @@ def split_dataset(dataset, val_ratio = 0.2):
     return train, val
     
 def booleanize_positions(positions: np.ndarray):
+    """
+    2d representation of board position
+    """
     g = np.zeros((positions.shape[0], 7, 14))
     for i in tqdm(range(positions.shape[0]), desc = "Booleanizing positions"):
         for y in range(7):
@@ -204,4 +207,19 @@ def booleanize_positions(positions: np.ndarray):
                     g[i, y, x] = 1
                 elif p == 1:
                     g[i, y, x + 7] = 1
+    return g
+
+def booleanize_positions_v2(positions: np.ndarray):
+    """
+    3d representation of board position.
+    """
+    g = np.zeros((positions.shape[0], 2, 7, 7))
+    for i in tqdm(range(positions.shape[0]), desc = "Booleanizing positions"):
+        for y in range(7):
+            for x in range(7):
+                p = positions[i, y, x]
+                if p == -1:
+                    g[i, 0, y, x] = 1
+                elif p == 1:
+                    g[i, 1, y, x] = 1
     return g
