@@ -1,3 +1,8 @@
+"""
+Hex game winner prediction using convolutional graph tsetlin machine. Based on example MNISTConvolutionDemo.py
+
+Works with build of GraphTsetlinMachine from commit ed16ef4b574549fa3bb15110dc0cdcb41de8225d of https://github.com/cair/GraphTsetlinMachine
+"""
 from utils import load_dataset, booleanize_positions
 from GraphTsetlinMachine.graphs import Graphs
 from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
@@ -5,7 +10,7 @@ import numpy as np
 import argparse
 from tqdm import tqdm
 from skimage.util import view_as_windows
-import time
+from time import time
 
 def default_args(**kwargs):
     parser = argparse.ArgumentParser()
@@ -29,19 +34,20 @@ def default_args(**kwargs):
 
 args = default_args()
 
-num_rows = 1000
+num_rows = 20000
 positions, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
 
 winners = np.where(winners > 0, 1, 0) 
 positions = booleanize_positions(positions)
 
+# First 80% of data is training, the remaining is test
 split_index = int(0.8 * num_rows)
 train_positions = positions[:split_index]
 train_winners = winners[:split_index]
 test_positions = positions[split_index:]
 test_winners = winners[split_index:]
 
-patch_size = 4
+patch_size = 5
 
 row_dims = 14 - patch_size + 1
 col_dims = 7 - patch_size + 1
