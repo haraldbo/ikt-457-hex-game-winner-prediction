@@ -35,7 +35,11 @@ Ole Andr´e Haddelands masters thesis). So our 7x7 matrix now becomes a 7x14 mat
 ```
 
 The board can also be represented in 3 dimensions 2x7x7:
-![alt text](./3dboard.png)
+![no alt text](./3dboard.png)
 
 ## 4. Using the graph tsetlin machine to learn
 Now that we have booleanized the position, we can use the graph tsetlin machine to try and learn something from it. We modified the example in MNISTConvolutionDemo.py to make it work. (Show [code for 2d](./hexgameV1.py) and [code for 3d](./hexgameV2.py), and maybe a demo?).
+
+### Results from running V2 for 30 epochs
+![no alt text](./resulthexgamev2.png)
+Test accuracy reaches around 95%
