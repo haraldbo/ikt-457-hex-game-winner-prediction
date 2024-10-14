@@ -196,7 +196,7 @@ def split_dataset(dataset, val_ratio = 0.2):
     
 def booleanize_positions(positions: np.ndarray):
     g = np.zeros((positions.shape[0], 7, 14))
-    for i in range(positions.shape[0]):
+    for i in tqdm(range(positions.shape[0]), desc = "Booleanizing positions"):
         for y in range(7):
             for x in range(7):
                 p = positions[i, y, x]
