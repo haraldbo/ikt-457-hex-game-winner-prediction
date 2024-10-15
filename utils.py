@@ -5,6 +5,7 @@ import skimage.draw as draw
 import math
 from tqdm import tqdm
 from random import randint
+import networkx as nx
     
 def load_dataset(file_name, num_rows = None):
     """
@@ -223,3 +224,41 @@ def booleanize_positions_v2(positions: np.ndarray):
                 elif p == 1:
                     g[i, 1, y, x] = 1
     return g
+
+def create_graph(position):
+    graph = nx.Graph()
+
+    def get_piece_at_position(x, y):
+        return position[x, y]
+
+    # For each position; connect to nearby nodes
+    for y in range(7):
+        for x in range(7):
+            # Add node
+            graph.add_node((x, y))
+
+            # piece = 0 means empty and therefore it is not connected
+            piece = get_piece_at_position(x, y)
+            if piece == 0:
+                continue
+
+            # Connect to nearby nodes
+            neighbours = []
+            if x < 6: # Right neighbour
+                neighbours.append((x+1, y))
+            if x > 0: # Left neighbour
+                neighbours.append((x-1, y))
+            if y > 0: # Neighbours above
+                neighbours.append((x, y-1))
+                if x < 6:
+                    neighbours.append((x+1, y-1))
+            if y < 6: # Neighbours below
+                neighbours.append((x, y+1))
+                if x > 0:
+                    neighbours.append((x-1, y+1))
+            for (nex, ney) in neighbours:
+                neighbour_piece = get_piece_at_position(nex, ney)
+                if piece == neighbour_piece:
+                    graph.add_edge((x, y), (nex, ney))
+    
+    return graph
