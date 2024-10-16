@@ -1,5 +1,5 @@
 """
-Hex game winner prediction by using connectivity idea. Based on example MNISTVanillaDemo.py, but sadly it does not work.
+Hex game winner prediction by using connectivity and empty cells.
 
 Works with build of GraphTsetlinMachine from commit ed16ef4b574549fa3bb15110dc0cdcb41de8225d of https://github.com/cair/GraphTsetlinMachine
 """
@@ -16,7 +16,7 @@ from pathlib import Path
 
 def default_args(**kwargs):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", default=250, type=int)
+    parser.add_argument("--epochs", default=30, type=int)
     parser.add_argument("--number-of-clauses", default=20000, type=int)
     parser.add_argument("--T", default=25000, type=int)
     parser.add_argument("--s", default=10.0, type=float)
@@ -99,7 +99,7 @@ def load_prepared_dataset():
 
 args = default_args()
 num_rows = 100000
-positions, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
+#positions, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
 
 
 #Y = np.where(Y > 0, 1, 0)
@@ -128,6 +128,15 @@ X_train = X[:split_index]
 Y_train = Y[:split_index]
 X_test = X[split_index:]
 Y_test = Y[split_index:]
+
+train_counts = np.array(np.unique(Y_train, return_counts=True)).T
+test_counts = np.array(np.unique(Y_test, return_counts=True)).T
+
+print("Train balance:")
+print(train_counts)
+
+print("Test balance:")
+print(test_counts)
 
 symbols = []
 for i in range(49 * 49 * 2 + 49):

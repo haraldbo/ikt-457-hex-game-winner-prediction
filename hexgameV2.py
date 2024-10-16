@@ -14,17 +14,17 @@ from time import time
 
 def default_args(**kwargs):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", default=20, type=int)
+    parser.add_argument("--epochs", default=10, type=int)
     parser.add_argument("--number-of-clauses", default=50000, type=int)
     parser.add_argument("--T", default=25000, type=int)
     parser.add_argument("--s", default=10.0, type=float)
     parser.add_argument("--depth", default=1, type=int)
-    parser.add_argument("--hypervector-size", default=256, type=int)
+    parser.add_argument("--hypervector-size", default=1024, type=int)
     parser.add_argument("--hypervector-bits", default=4, type=int)
     parser.add_argument("--message-size", default=256, type=int)
     parser.add_argument("--message-bits", default=2, type=int)
     parser.add_argument('--double-hashing', dest='double_hashing', default=False, action='store_true')
-    parser.add_argument("--max-included-literals", default=64, type=int)
+    parser.add_argument("--max-included-literals", default=128, type=int)
 
     args = parser.parse_args()
     for key, value in kwargs.items():
@@ -48,10 +48,11 @@ test_positions = positions[split_index:]
 test_winners = winners[split_index:]
 
 train_counts = np.array(np.unique(train_winners, return_counts=True)).T
+test_counts = np.array(np.unique(test_winners, return_counts=True)).T
+
 print("Train balance:")
 print(train_counts)
 
-test_counts = np.array(np.unique(test_winners, return_counts=True)).T
 print("Test balance:")
 print(test_counts)
 
