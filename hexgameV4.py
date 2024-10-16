@@ -6,7 +6,7 @@ Works with build of GraphTsetlinMachine from commit ed16ef4b574549fa3bb15110dc0c
 from utils import load_dataset, booleanize_positions, create_graph
 from networkx import has_path
 from GraphTsetlinMachine.graphs import Graphs
-#from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
+from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
 import numpy as np
 import argparse
 from tqdm import tqdm
@@ -20,12 +20,12 @@ def default_args(**kwargs):
     parser.add_argument("--T", default=25000, type=int)
     parser.add_argument("--s", default=10.0, type=float)
     parser.add_argument("--depth", default=1, type=int)
-    parser.add_argument("--hypervector-size", default=128, type=int)
-    parser.add_argument("--hypervector-bits", default=2, type=int)
+    parser.add_argument("--hypervector-size", default=2048, type=int)
+    parser.add_argument("--hypervector-bits", default=4, type=int)
     parser.add_argument("--message-size", default=256, type=int)
     parser.add_argument("--message-bits", default=2, type=int)
     parser.add_argument('--double-hashing', dest='double_hashing', default=False, action='store_true')
-    parser.add_argument("--max-included-literals", default=32, type=int)
+    parser.add_argument("--max-included-literals", default=5000, type=int)
 
     args = parser.parse_args()
     for key, value in kwargs.items():
@@ -73,7 +73,7 @@ def create_connectivity_matrix(position):
 
 args = default_args()
 
-num_rows = 100
+num_rows = 10000
 positions, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
 
 Y = np.where(Y > 0, 1, 0)
@@ -122,13 +122,13 @@ graphs_train.prepare_node_configuration()
 
 # Add nodes
 for graph_id in range(X_train.shape[0]):
-    graphs_train.add_graph_node(graph_id, "connectivity-node", 0)
+    graphs_train.add_graph_node(graph_id, "con", 0)
         
 graphs_train.prepare_edge_configuration()
 
 for graph_id in tqdm(range(X_train.shape[0]), desc = "Producing training data"):
     for k in X_train[graph_id].nonzero()[0]:
-        graphs_train.add_graph_node_property(graph_id, "connectivity-node", "x:%d" % (k))
+        graphs_train.add_graph_node_property(graph_id, "con", "x:%d" % (k))
 
 graphs_train.encode()
 
@@ -141,13 +141,13 @@ for graph_id in range(X_test.shape[0]):
 graphs_test.prepare_node_configuration()
 
 for graph_id in range(X_test.shape[0]):
-    graphs_test.add_graph_node(graph_id, "connectivity-node", 0)
+    graphs_test.add_graph_node(graph_id, "con", 0)
 
 graphs_test.prepare_edge_configuration()
 
 for graph_id in tqdm(range(X_test.shape[0]), desc = "Producing test data"):
     for k in X_test[graph_id].nonzero()[0]:
-        graphs_test.add_graph_node_property(graph_id, "connectivity-node", "x:%d" % (k))
+        graphs_test.add_graph_node_property(graph_id, "con", "x:%d" % (k))
 
 graphs_test.encode()
 
