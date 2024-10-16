@@ -12,6 +12,7 @@ import argparse
 from tqdm import tqdm
 from skimage.util import view_as_windows
 from time import time
+from pathlib import Path
 
 def default_args(**kwargs):
     parser = argparse.ArgumentParser()
@@ -71,26 +72,55 @@ def create_connectivity_matrix(position):
     
     return conmat
 
-args = default_args()
 
-num_rows = 10000
+def save_prepared_dataset(X, Y):
+    assert X.shape[0] == Y.shape[0]
+    with open(Path(__file__).parent / "hexgamev4-prepared-dataset.csv", mode="w+") as csv:
+        for i in tqdm(range(X.shape[0]), desc = "Saving prepared dataset to file"):
+            line = ""
+            for x in X[i]:
+                line += str(x)+","
+            line += str(Y[i])
+            csv.write(line + "\n")
+
+def load_prepared_dataset():
+    X = []
+    Y = []
+    with open(Path(__file__).parent / "hexgamev4-prepared-dataset.csv") as csv:
+        for line_number, line in enumerate(tqdm(csv, desc = "Loading prepared dataset", unit = "Rows", total = num_rows)):
+            line = line.split(",")
+            x = []
+            for entry in line[:-1]:
+                x.append(int(entry))
+            Y.append(int(line[-1]))
+            X.append(x)
+
+    return np.array(X), np.array(Y)
+
+args = default_args()
+num_rows = 100000
 positions, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
 
-Y = np.where(Y > 0, 1, 0)
 
-X = []
+#Y = np.where(Y > 0, 1, 0)
+#X = []
+#
+#for i in tqdm(range(positions.shape[0]), desc = "Extracting features"):
+#    connectivity_features = create_connectivity_matrix(positions[i])
+#    empty_slots_features = np.where([i] == 0, 1, 0)
+#    x = []
+#    for j in connectivity_features.reshape(-1):
+#        x.append(j)
+#    for j in empty_slots_features.reshape(-1):
+#        x.append(j)
+#    X.append(x)
+#
+#X = np.array(X)
+#
+#save_prepared_dataset(X, Y)
+#exit(0)
 
-for i in tqdm(range(positions.shape[0]), desc = "Extracting features"):
-    connectivity_features = create_connectivity_matrix(positions[i])
-    empty_slots_features = np.where([i] == 0, 1, 0)
-    x = []
-    for j in connectivity_features.reshape(-1):
-        x.append(j)
-    for j in empty_slots_features.reshape(-1):
-        x.append(j)
-    X.append(x)
-
-X = np.array(X)
+X,Y = load_prepared_dataset()
 
 # First 80% of data is training, the remaining is test
 split_index = int(0.8 * num_rows)
