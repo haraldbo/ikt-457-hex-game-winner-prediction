@@ -229,7 +229,7 @@ def create_graph(position):
     graph = nx.Graph()
 
     def get_piece_at_position(x, y):
-        return position[x, y]
+        return position[y, x] # TODO: should be [y, x]
 
     # For each position; connect to nearby nodes
     for y in range(7):
@@ -262,3 +262,34 @@ def create_graph(position):
                     graph.add_edge((x, y), (nex, ney))
     
     return graph
+
+def display_as_graph(position):
+    
+    def get_node_color(node):
+        match(position[node[1], node[0]]):
+            case -1: return "red"
+            case 0: return "white"
+            case 1: return "blue"
+            
+    G = create_graph(position)
+
+    options = {
+        "font_size": 0,
+        "node_size": 100,
+        "edgecolors": "black",
+        "linewidths": 1,
+        "width": 1,
+    }
+
+    pos = {node: (node[0], -node[1]) for node in G.nodes}
+    nodelist = [node for node in G.nodes]
+    nodecolor = [get_node_color(node) for node in G.nodes]
+
+    nx.draw_networkx(G, pos, nodelist = nodelist, node_color = nodecolor, **options)
+
+    ax = plt.gca()
+    ax.margins(0.20)
+    plt.axis("off")
+    plt.show()
+
+    plt.clf()
