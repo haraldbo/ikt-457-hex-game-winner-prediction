@@ -3,7 +3,7 @@ Hex game winner prediction using convolutional graph tsetlin machine. Based on e
 
 Works with build of GraphTsetlinMachine from commit ed16ef4b574549fa3bb15110dc0cdcb41de8225d of https://github.com/cair/GraphTsetlinMachine
 """
-from utils import load_dataset, booleanize_positions_v2
+from utils import load_dataset, booleanize_positions_3d
 from GraphTsetlinMachine.graphs import Graphs
 from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
 import numpy as np
@@ -38,7 +38,7 @@ num_rows = 100_000
 positions, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
 
 winners = np.where(winners > 0, 1, 0) 
-positions = booleanize_positions_v2(positions)
+positions = booleanize_positions_3d(positions)
 
 # First 80% of data is training, the remaining is test
 split_index = int(0.8 * num_rows)

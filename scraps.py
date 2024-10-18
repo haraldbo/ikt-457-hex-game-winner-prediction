@@ -1,5 +1,5 @@
 
-from utils import load_dataset, display_as_graph, booleanize_positions_v2
+from utils import load_dataset, display_as_graph, booleanize_positions_3d
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -8,17 +8,15 @@ def write_csv_example():
     results_csv.write(f"{epoch},{train_accuracy},{test_accuracy}")
     results_csv.close()
     
-def create3d_board_representation():
+def create3d_board_representation(position):
     """
-    Create a (2, 7, 7) representation of the booleanized board configuration
+    Display a (2, 7, 7) representation of the booleanized board
     
     This method was cooked by modifying 
     https://matplotlib.org/stable/gallery/mplot3d/voxels_numpy_logo.html#sphx-glr-gallery-mplot3d-voxels-numpy-logo-py
-
-    TODO: Polish this function and move it into utils.py
     
-    """    
-    position = booleanize_positions_v2(positions[1:2])[0]
+    """
+    position = booleanize_positions_3d(position)
     def explode(data):
         size = np.array(data.shape)*2
         data_e = np.zeros(size - 1, dtype=data.dtype)
@@ -55,11 +53,11 @@ def create3d_board_representation():
 
     plt.show()
     
-#create3d_board_representation()
 
 positions, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = 10)
 
 display_as_graph(positions[1])
+create3d_board_representation(positions[1])
 #position = positions[1]
 #winner = winners[1]
 #

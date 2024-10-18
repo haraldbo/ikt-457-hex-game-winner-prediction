@@ -210,7 +210,7 @@ def booleanize_positions(positions: np.ndarray):
                     g[i, y, x + 7] = 1
     return g
 
-def booleanize_positions_v2(positions: np.ndarray):
+def booleanize_positions_3d(positions: np.ndarray):
     """
     3d representation of board position.
     """
