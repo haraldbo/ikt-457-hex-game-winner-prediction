@@ -83,7 +83,7 @@ def save_prepared_dataset(X, Y):
             line += str(Y[i])
             csv.write(line + "\n")
 
-def load_prepared_dataset():
+def load_prepared_dataset(num_rows, file_name):
     X = []
     Y = []
     with open(Path(__file__).parent / "hexgamev4-prepared-dataset.csv") as csv:
@@ -94,33 +94,38 @@ def load_prepared_dataset():
                 x.append(int(entry))
             Y.append(int(line[-1]))
             X.append(x)
+            if line_number + 1 == num_rows: break
 
     return np.array(X), np.array(Y)
 
 args = default_args()
-num_rows = 100000
-#positions, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
 
+def create_dataset(num_rows, save):
+    positions, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows)
 
-#Y = np.where(Y > 0, 1, 0)
-#X = []
-#
-#for i in tqdm(range(positions.shape[0]), desc = "Extracting features"):
-#    connectivity_features = create_connectivity_matrix(positions[i])
-#    empty_slots_features = np.where([i] == 0, 1, 0)
-#    x = []
-#    for j in connectivity_features.reshape(-1):
-#        x.append(j)
-#    for j in empty_slots_features.reshape(-1):
-#        x.append(j)
-#    X.append(x)
-#
-#X = np.array(X)
-#
-#save_prepared_dataset(X, Y)
-#exit(0)
+    Y = np.where(Y > 0, 1, 0)
+    X = []
 
-X,Y = load_prepared_dataset()
+    for i in tqdm(range(positions.shape[0]), desc = "Extracting features"):
+        connectivity_features = create_connectivity_matrix(positions[i])
+        empty_slots_features = np.where([i] == 0, 1, 0)
+        x = []
+        for j in connectivity_features.reshape(-1):
+            x.append(j)
+        for j in empty_slots_features.reshape(-1):
+            x.append(j)
+        X.append(x)
+    
+    X = np.array(X)
+
+    if save:
+        save_prepared_dataset(X, Y)
+
+    return X, Y
+
+num_rows = 1000
+#X, Y = create_dataset(num_rows = num_rows, save = True)
+X,Y = load_prepared_dataset(num_rows = num_rows, file_name = "hexgamev4-prepared-dataset.csv") 
 
 # First 80% of data is training, the remaining is test
 split_index = int(0.8 * num_rows)

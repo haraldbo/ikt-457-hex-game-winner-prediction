@@ -2,7 +2,6 @@ import networkx as nx
 from networkx import has_path
 from random import randint
 import numpy as np
-from utils import display_as_graph
 
 def get_winner(board_graph, board_size):
     """
