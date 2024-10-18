@@ -2,6 +2,7 @@ import networkx as nx
 from networkx import has_path
 from random import randint
 import numpy as np
+from utils import display_as_graph
 
 def get_winner(board_graph, board_size):
     """
@@ -19,7 +20,7 @@ def get_winner(board_graph, board_size):
         for j in range(board_size):
             ty = j
             tx = board_size - 1
-            if board_graph.nodes[(ty, tx)]["piece"] != -1: continue
+            if board_graph.nodes[(ty, tx)]["piece"] != 1: continue
             if has_path(board_graph, (fy, fx), (ty, tx)): return 1
 
     # Check if -1 has won
@@ -36,18 +37,19 @@ def get_winner(board_graph, board_size):
 
     return 0
 
-def add_piece(board_graph: nx.Graph, y, x, piece):
+def add_piece(board_graph: nx.Graph, board_size, y, x, piece):
+    board_graph.add_node((y, x), piece=piece)
     # Add edge to nearby nodes
     neighbours = []
-    if x < 6: # Right neighbour
+    if x < board_size-1: # Right neighbour
         neighbours.append((y, x+1))
     if x > 0: # Left neighbour
         neighbours.append((y, x-1))
     if y > 0: # Neighbours above
         neighbours.append((y-1, x))
-        if x < 6:
+        if x < board_size-1:
             neighbours.append((y-1, x+1))
-    if y < 6: # Neighbours below
+    if y < board_size-1: # Neighbours below
         neighbours.append((y+1, x))
         if x > 0:
             neighbours.append((y+1, x-1))
@@ -64,6 +66,13 @@ def create_empty_board_graph(board_size):
             board_graph.add_node((y, x), piece = 0)
     return board_graph
 
+def board_graph_as_matrix(board_graph: nx.Graph, board_size):
+    mat = np.zeros((board_size, board_size))
+    for y in range(board_size):
+        for x in range(board_size):
+            mat[y,x] = board_graph.nodes[(y, x)]["piece"]
+    return mat
+
 def create_random_game(board_size):
     possible_moves = [(y, x) for y in range(board_size) for x in range(board_size)]
     board_graph = create_empty_board_graph(board_size)
@@ -71,10 +80,10 @@ def create_random_game(board_size):
     winner = 0
     while winner == 0:
         (y, x) = possible_moves.pop(randint(0, len(possible_moves)-1))
-        add_piece(board_graph, y, x, current_player)
+        add_piece(board_graph, board_size, y, x, current_player)
         current_player *= -1 # 1 becomes -1, -1 becomes 1, alternating
         winner = get_winner(board_graph, board_size)
     
-    return board_graph, winner
+    return board_graph_as_matrix(board_graph, board_size), winner
 
-print(create_random_game(7))
+board, winner = create_random_game(9)
