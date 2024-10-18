@@ -225,53 +225,50 @@ def booleanize_positions_3d(positions: np.ndarray):
                     g[i, 1, y, x] = 1
     return g
 
-def create_graph(position):
+def create_graph(board):
     graph = nx.Graph()
-
-    def get_piece_at_position(x, y):
-        return position[y, x] # TODO: should be [y, x]
 
     # For each position; connect to nearby nodes
     for y in range(7):
         for x in range(7):
             # Add node
-            graph.add_node((x, y))
+            piece = board[y,x]
+            graph.add_node((y, x), piece = piece)
 
             # piece = 0 means empty and therefore it is not connected
-            piece = get_piece_at_position(x, y)
+
             if piece == 0:
                 continue
 
             # Connect to nearby nodes
             neighbours = []
             if x < 6: # Right neighbour
-                neighbours.append((x+1, y))
+                neighbours.append((y, x+1))
             if x > 0: # Left neighbour
-                neighbours.append((x-1, y))
+                neighbours.append((y, x - 1))
             if y > 0: # Neighbours above
-                neighbours.append((x, y-1))
+                neighbours.append((y-1, x))
                 if x < 6:
-                    neighbours.append((x+1, y-1))
+                    neighbours.append((y-1, x+1))
             if y < 6: # Neighbours below
-                neighbours.append((x, y+1))
+                neighbours.append((y+1, x))
                 if x > 0:
-                    neighbours.append((x-1, y+1))
-            for (nex, ney) in neighbours:
-                neighbour_piece = get_piece_at_position(nex, ney)
-                if piece == neighbour_piece:
-                    graph.add_edge((x, y), (nex, ney))
+                    neighbours.append((y+1, x-1))
+            for (ney, nex) in neighbours:
+                if piece == board[ney, nex]:
+                    graph.add_edge((y, x), (ney, nex))
     
     return graph
 
-def display_as_graph(position):
+def display_as_graph(board):
     
-    def get_node_color(node):
-        match(position[node[1], node[0]]):
+    def get_piece_color(piece):
+        match(piece):
             case -1: return "red"
             case 0: return "white"
             case 1: return "blue"
             
-    G = create_graph(position)
+    G = create_graph(board)
 
     options = {
         "font_size": 0,
@@ -281,9 +278,9 @@ def display_as_graph(position):
         "width": 1,
     }
 
-    pos = {node: (node[0], -node[1]) for node in G.nodes}
+    pos = {node: (node[1], -node[0]) for node in G.nodes}
     nodelist = [node for node in G.nodes]
-    nodecolor = [get_node_color(node) for node in G.nodes]
+    nodecolor = [get_piece_color(G.nodes[node]["piece"]) for node in nodelist]
 
     nx.draw_networkx(G, pos, nodelist = nodelist, node_color = nodecolor, **options)
 
