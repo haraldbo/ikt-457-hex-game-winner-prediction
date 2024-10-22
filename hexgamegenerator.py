@@ -1,6 +1,6 @@
 import networkx as nx
 from networkx import has_path
-from random import randint
+from random import randint, shuffle, sample
 import numpy as np
 
 def get_winner(board_graph, board_size):
@@ -65,24 +65,27 @@ def create_empty_board_graph(board_size):
             board_graph.add_node((y, x), piece = 0)
     return board_graph
 
-def board_graph_as_matrix(board_graph: nx.Graph, board_size):
-    mat = np.zeros((board_size, board_size))
+def board_graph_as_array(board_graph: nx.Graph, board_size):
+    arr = []
     for y in range(board_size):
         for x in range(board_size):
-            mat[y,x] = board_graph.nodes[(y, x)]["piece"]
-    return mat
+            arr.append(board_graph.nodes[(y, x)]["piece"])
+    return arr
 
 def create_random_game(board_size):
-    possible_moves = [(y, x) for y in range(board_size) for x in range(board_size)]
+    possible_moves = sample(range(0, board_size * board_size), board_size * board_size)
     board_graph = create_empty_board_graph(board_size)
     current_player = 1
     winner = 0
-    while winner == 0:
-        (y, x) = possible_moves.pop(randint(0, len(possible_moves)-1))
+    for move in possible_moves:
+        y = move // board_size
+        x = move % board_size
         add_piece(board_graph, board_size, y, x, current_player)
         current_player *= -1 # 1 becomes -1, -1 becomes 1, alternating
         winner = get_winner(board_graph, board_size)
+        if winner != 0:
+            break
     
-    return board_graph_as_matrix(board_graph, board_size), winner
+    return board_graph_as_array(board_graph, board_size), winner
 
-board, winner = create_random_game(9)
+#board, winner = create_random_game(20)

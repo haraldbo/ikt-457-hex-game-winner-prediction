@@ -54,10 +54,10 @@ def create3d_board_representation(position):
     plt.show()
     
 
-positions, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = 10)
-
-display_as_graph(positions[1])
-create3d_board_representation(positions[1])
+#positions, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = 10)
+#
+#display_as_graph(positions[1])
+#create3d_board_representation(positions[1])
 #position = positions[1]
 #winner = winners[1]
 #
@@ -68,3 +68,8 @@ create3d_board_representation(positions[1])
 #print(booleanize_positions_v2(positions[1:2]))
 #
 
+t = (1, 0)
+
+arr = [[1, 2], [3, 4]]
+
+print(np.array(arr)[*t])

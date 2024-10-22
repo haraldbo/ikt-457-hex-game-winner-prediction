@@ -227,10 +227,10 @@ def booleanize_positions_3d(positions: np.ndarray):
 
 def create_graph(board):
     graph = nx.Graph()
-
+    board_size = board.shape[0]
     # For each position; connect to nearby nodes
-    for y in range(7):
-        for x in range(7):
+    for y in range(board_size):
+        for x in range(board_size):
             # Add node
             piece = board[y,x]
             graph.add_node((y, x), piece = piece)
@@ -242,15 +242,15 @@ def create_graph(board):
 
             # Connect to nearby nodes
             neighbours = []
-            if x < 6: # Right neighbour
+            if x < board_size-1: # Right neighbour
                 neighbours.append((y, x+1))
             if x > 0: # Left neighbour
                 neighbours.append((y, x - 1))
             if y > 0: # Neighbours above
                 neighbours.append((y-1, x))
-                if x < 6:
+                if x < board_size-1:
                     neighbours.append((y-1, x+1))
-            if y < 6: # Neighbours below
+            if y < board_size-1: # Neighbours below
                 neighbours.append((y+1, x))
                 if x > 0:
                     neighbours.append((y+1, x-1))
