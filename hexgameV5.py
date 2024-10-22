@@ -1,3 +1,7 @@
+"""
+Does not work
+"""
+
 from GraphTsetlinMachine.graphs import Graphs
 import numpy as np
 from scipy.sparse import csr_matrix
