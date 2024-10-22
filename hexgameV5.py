@@ -10,17 +10,17 @@ import networkx
 
 def default_args(**kwargs):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", default=30, type=int)
-    parser.add_argument("--number-of-clauses", default=5000, type=int)
-    parser.add_argument("--T", default=25000, type=int)
-    parser.add_argument("--s", default=10.0, type=float)
+    parser.add_argument("--epochs", default=3000, type=int)
+    parser.add_argument("--number-of-clauses", default=1000, type=int)
+    parser.add_argument("--T", default=20000, type=int)
+    parser.add_argument("--s", default=5.0, type=float)
     parser.add_argument("--depth", default=1, type=int)
-    parser.add_argument("--hypervector-size", default=256, type=int)
+    parser.add_argument("--hypervector-size", default=512, type=int)
     parser.add_argument("--hypervector-bits", default=2, type=int)
     parser.add_argument("--message-size", default=256, type=int)
     parser.add_argument("--message-bits", default=2, type=int)
     parser.add_argument('--double-hashing', dest='double_hashing', default=False, action='store_true')
-    parser.add_argument("--max-included-literals", default=2000, type=int)
+    parser.add_argument("--max-included-literals", default=500, type=int)
     parser.add_argument("--number-of-state-bits", default=8, type=int)
 
     args = parser.parse_args()
@@ -69,23 +69,44 @@ for graph_id in range(X_train.shape[0]):
 
 graphs_train.prepare_node_configuration()
 
+# Add nodes
 for graph_id in range(X_train.shape[0]):
     board = X_train[graph_id]
-    g = create_graph(board)
-    for (y, x) in g.nodes:
-        num_edges = len(g.edges((y, x)))
-        graphs_train.add_graph_node(graph_id, get_node_name(y, x), num_edges)
+    for y in range(board_size):
+        for x in range(board_size):
+            if (y, x) in [(0, 0), (board_size-1, board_size-1)]:
+                num_edges = 2
+            elif (y, x) in [(board_size-1, 0), (0, board_size-1)]:
+                num_edges = 3
+            elif y == 0 or x == 0 or y == (board_size - 1) or x == (board_size - 1):
+                num_edges = 4
+            else:
+                num_edges = 6
+            graphs_train.add_graph_node(graph_id, get_node_name(y, x), num_edges)
 
 graphs_train.prepare_edge_configuration()
 
 for graph_id in range(X_train.shape[0]):
     edge_type = "Plain"
-    board = X_train[graph_id]
-    g = create_graph(board)
-    for (src_node, dest_node) in g.edges:
-        graphs_train.add_graph_node_edge(graph_id, get_node_name(*src_node), get_node_name(*dest_node), edge_type)
-        graphs_train.add_graph_node_edge(graph_id, get_node_name(*dest_node), get_node_name(*src_node), edge_type)
+    for y in range(board_size):
+        for x in range(board_size):
+            neighbours = []
+            if x < (board_size - 1): # Right neighbour
+                neighbours.append((y, x + 1))
+            if x > 0: # Left neighbour
+                neighbours.append((y, x - 1))
+            if y > 0: # Neighbours above
+                neighbours.append((y - 1, x))
+                if x < board_size - 1:
+                    neighbours.append((y - 1, x + 1))
+            if y < (board_size - 1): # Neighbours below
+                neighbours.append((y + 1, x))
+                if x > 0:
+                    neighbours.append((y + 1, x - 1))
+            for (ney, nex) in neighbours:
+                graphs_train.add_graph_node_edge(graph_id, get_node_name(y, x), get_node_name(ney, nex), edge_type)
 
+# Add color to each node (black, empty and white)
 for graph_id in range(X_train.shape[0]):
     board = X_train[graph_id]
     for y in range(board_size):
@@ -94,9 +115,6 @@ for graph_id in range(X_train.shape[0]):
 
 graphs_train.encode()
 
-
-print("Creating testing data")
-
 graphs_test = Graphs(X_test.shape[0], init_with=graphs_train)
 
 for graph_id in range(X_test.shape[0]):
@@ -104,23 +122,44 @@ for graph_id in range(X_test.shape[0]):
 
 graphs_test.prepare_node_configuration()
 
+# Add nodes
 for graph_id in range(X_test.shape[0]):
     board = X_test[graph_id]
-    g = create_graph(board)
-    for (y, x) in g.nodes:
-        num_edges = len(g.edges((y, x)))
-        graphs_test.add_graph_node(graph_id, get_node_name(y, x), num_edges)
+    for y in range(board_size):
+        for x in range(board_size):
+            num_edges = 6 
+            if (y, x) in [(0, 0), (board_size-1, board_size-1)]:
+                num_edges = 2 
+            elif (y, x) in [(board_size-1, 0), (0, board_size-1)]:
+                num_edges = 3 
+            elif y == 0 or x == 0 or x == board_size -1 or y == board_size - 1:
+                num_edges = 4 
+            graphs_test.add_graph_node(graph_id, get_node_name(y, x), num_edges)
 
 graphs_test.prepare_edge_configuration()
 
+# Add edges between nodes that are connected to each other (that share an edge in the hexagon)
 for graph_id in range(X_test.shape[0]):
     edge_type = "Plain"
-    board = X_test[graph_id]
-    g = create_graph(board)
-    for (src_node, dest_node) in g.edges:
-        graphs_test.add_graph_node_edge(graph_id, get_node_name(*src_node), get_node_name(*dest_node), edge_type)
-        graphs_test.add_graph_node_edge(graph_id, get_node_name(*dest_node), get_node_name(*src_node), edge_type)
+    for y in range(board_size):
+        for x in range(board_size):
+            neighbours = []
+            if x < 6: # Right neighbour
+                neighbours.append((y, x+1))
+            if x > 0: # Left neighbour
+                neighbours.append((y, x - 1))
+            if y > 0: # Neighbours above
+                neighbours.append((y-1, x))
+                if x < 6:
+                    neighbours.append((y-1, x+1))
+            if y < 6: # Neighbours below
+                neighbours.append((y+1, x))
+                if x > 0:
+                    neighbours.append((y+1, x-1))
+            for (ney, nex) in neighbours:
+                graphs_test.add_graph_node_edge(graph_id, get_node_name(y, x), get_node_name(ney, nex), edge_type)
 
+# Add color to each node (black, empty and white)
 for graph_id in range(X_test.shape[0]):
     board = X_test[graph_id]
     for y in range(board_size):
