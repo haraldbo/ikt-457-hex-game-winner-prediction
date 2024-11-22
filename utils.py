@@ -225,6 +225,27 @@ def booleanize_positions_3d(positions: np.ndarray):
                     g[i, 1, y, x] = 1
     return g
 
+def create_possible_neighbour_lookup(board_size):
+    lookup = {}
+    for y in range(board_size):
+        for x in range(board_size):
+            neighbours = []
+            if x < board_size-1: # Right neighbour
+                neighbours.append((y, x+1))
+            if x > 0: # Left neighbour
+                neighbours.append((y, x - 1))
+            if y > 0: # Neighbours above
+                neighbours.append((y-1, x))
+                if x < board_size-1:
+                    neighbours.append((y-1, x+1))
+            if y < board_size-1: # Neighbours below
+                neighbours.append((y+1, x))
+                if x > 0:
+                    neighbours.append((y+1, x-1))
+            lookup[(y, x)] = neighbours
+    return lookup
+            
+
 def create_graph(board):
     graph = nx.Graph()
     board_size = board.shape[0]

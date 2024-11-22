@@ -37,8 +37,10 @@ def get_winner(board_graph, board_size):
     return 0
 
 def add_piece(board_graph: nx.Graph, board_size, y, x, piece):
+    # Add node:
     board_graph.add_node((y, x), piece=piece)
-    # Add edge to nearby nodes
+    
+    # Add edge to nearby nodes of equal color:
     neighbours = []
     if x < board_size-1: # Right neighbour
         neighbours.append((y, x+1))
@@ -88,4 +90,5 @@ def create_random_game(board_size):
     
     return board_graph_as_array(board_graph, board_size), winner
 
-#board, winner = create_random_game(20)
+board, winner = create_random_game(14)
+print(",".join(np.array([*board, winner], dtype=str)))
