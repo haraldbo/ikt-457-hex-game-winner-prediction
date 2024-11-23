@@ -1,17 +1,22 @@
 """
-Does not work
+Based on connections and empty slots
 """
 
 from GraphTsetlinMachine.graphs import Graphs
 import numpy as np
-from scipy.sparse import csr_matrix
 from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
 from time import time
 import argparse
-import random
-from utils import load_dataset, create_graph, display_as_graph, get_neighbour_lookup
-import networkx
+from utils import load_dataset, create_graph, get_neighbour_lookup, get_all_board_coordinates
+from networkx import has_path
 from tqdm import tqdm
+import networkx as nx
+
+BLACK = -1
+EMPTY = 0
+WHITE = 1
+
+lookups = {}
 
 def default_args(**kwargs):
     parser = argparse.ArgumentParser()
@@ -34,59 +39,75 @@ def default_args(**kwargs):
             setattr(args, key, value)
     return args
 
-def get_node_name(y, x):
-    return f"y{y}x{x}"
 
-def get_node_symbol(p):
-    if p == -1:
-        return "B"
-    if p == 0:
-        return "E"
-    if p == 1:
-        return "W"
+def get_all_symbols(board_size):
+    symbols = []
+    board_coordinates = get_all_board_coordinates(board_size)
+    for (y0, x0) in board_coordinates:
+        # Empty slots
+        symbols.append(get_empty_symbol(y0, x0))
+        for (y1, x1) in board_coordinates:
+            # White connection from i to j
+            symbols.append(get_connection_symbol(WHITE, y0, x0, y1, x1))
+
+            # Black connection from i to j
+            symbols.append(get_connection_symbol(BLACK, y0, x0, y1, x1))
+    return symbols
+    
+def get_connection_symbol(player_color, y0, x0, y1, x1):
+    if player_color == BLACK:
+        return f"CB_{y0}_{x0}_{y1}_{x1}"
+    elif player_color == WHITE:
+        return f"CW_{y0}_{x0}_{y1}_{x1}"
+    else:
+        raise ValueError(f"Invalid player_color: {player_color}")
+    
+def get_empty_symbol(y, x):
+    return f"E_{y}_{x}"
     
 def populate_graphs(X: np.ndarray, graphs: Graphs, board_size):
-    neighbour_lookup = get_neighbour_lookup(board_size)
+    board_coordinates = get_all_board_coordinates(board_size)
     
     progress_bar = tqdm(total = X.shape[0] * 3, desc = "Creating graphs", leave = False)
-    
+    node_name = "The One"
     progress_bar.set_description("Setting number of nodes")
     for graph_id in range(X.shape[0]):
+        graphs.set_number_of_graph_nodes(graph_id, 1)
         progress_bar.update(1)
-        graphs.set_number_of_graph_nodes(graph_id, board_size * board_size)
+        progress_bar.refresh()
+    
     
     graphs.prepare_node_configuration()
     
-    progress_bar.refresh()
     progress_bar.set_description("Adding nodes")
     for graph_id in range(X.shape[0]):
+        graphs.add_graph_node(graph_id, node_name, 0)
         progress_bar.update(1)
-        board = X[graph_id]
-        for y in range(board_size):
-            for x in range(board_size):
-                num_edges = 0
-                for (ney, nex) in neighbour_lookup[y,x]:
-                    if board[y,x] == board[ney,nex] and board[y,x] != 0:
-                        num_edges += 1
-                graphs.add_graph_node(graph_id, get_node_name(y, x), num_edges)
+        progress_bar.refresh()
     
     graphs.prepare_edge_configuration()
     
-    progress_bar.refresh()
-    progress_bar.set_description("Adding edges and node properties")
+    progress_bar.set_description("Adding node properties")
     for graph_id in range(X.shape[0]):
-        progress_bar.update(1)
-        edge_type = "Plain"
+        
         board = X[graph_id]
-        for y in range(board_size):
-            for x in range(board_size):
-                graphs.add_graph_node_property(graph_id, get_node_name(y, x), get_node_symbol(board[y, x]))
-                
-                # Add edge between neighbouring nodes if they are of same color
-                for (ney, nex) in neighbour_lookup[(y,x)]:
-                    if board[y,x] == board[ney,nex] and board[y,x] != 0:
-                        graphs.add_graph_node_edge(graph_id, get_node_name(y, x), get_node_name(ney, nex), edge_type)
-    progress_bar.refresh()
+        board_graph = create_graph(board)
+        
+        for (y0, x0) in board_coordinates:
+            if board[y0,x0] == EMPTY:
+                graphs.add_graph_node_property(graph_id, node_name, get_empty_symbol(y0, x0))
+                continue
+            
+            for (x1, y1) in board_coordinates:
+                if board[y0, x0] == board[y1, x1] and has_path(board_graph, (y0, x0), (y1, x1)):
+                    graphs.add_graph_node_property(
+                        graph_id, 
+                        node_name, 
+                        get_connection_symbol(board[y0, x0], y0, x0, y1, x1)
+                    )
+        progress_bar.update(1)
+        progress_bar.refresh()
+                    
     graphs.encode()
     return graphs
     
@@ -94,7 +115,7 @@ args = default_args()
 
 # Create train data
 
-num_rows = 10000
+num_rows = 50000
 board_size = 7
 X, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
 
@@ -110,7 +131,7 @@ Y_test = Y[split_index:]
 print("Creating training graphs.")
 graphs_train = Graphs(
     X_train.shape[0],
-    symbols=["B", "E", "W"],
+    symbols=get_all_symbols(board_size),
     hypervector_size=args.hypervector_size,
     hypervector_bits=args.hypervector_bits,
 )

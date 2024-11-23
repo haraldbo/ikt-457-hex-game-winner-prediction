@@ -6,6 +6,10 @@ import math
 from tqdm import tqdm
 from random import randint
 import networkx as nx
+
+
+neighbours_lookups = {}
+board_coordinates_lookups = {}
     
 def load_dataset(file_name, num_rows = None):
     """
@@ -225,7 +229,11 @@ def booleanize_positions_3d(positions: np.ndarray):
                     g[i, 1, y, x] = 1
     return g
 
-def create_possible_neighbour_lookup(board_size):
+def get_neighbour_lookup(board_size):
+    global neighbours_lookups
+    if board_size in neighbours_lookups:
+        return neighbours_lookups[board_size]
+    
     lookup = {}
     for y in range(board_size):
         for x in range(board_size):
@@ -243,12 +251,30 @@ def create_possible_neighbour_lookup(board_size):
                 if x > 0:
                     neighbours.append((y+1, x-1))
             lookup[(y, x)] = neighbours
-    return lookup
             
+    neighbours_lookups[board_size] = lookup
+    return lookup
+
+def get_all_board_coordinates(board_size):
+    global board_coordinates_lookups
+    if board_size in board_coordinates_lookups:
+        return board_coordinates_lookups[board_size]
+
+    board_coordinates = []
+    for y in range(board_size):
+        for x in range(board_size):
+            board_coordinates.append((y, x))
+    
+    board_coordinates_lookups[board_size] = board_coordinates
+    
+    return board_coordinates
+    
 
 def create_graph(board):
     graph = nx.Graph()
     board_size = board.shape[0]
+    lookup = get_neighbour_lookup(board_size)
+    
     # For each position; connect to nearby nodes
     for y in range(board_size):
         for x in range(board_size):
@@ -261,21 +287,8 @@ def create_graph(board):
             if piece == 0:
                 continue
 
-            # Connect to nearby nodes
-            neighbours = []
-            if x < board_size-1: # Right neighbour
-                neighbours.append((y, x+1))
-            if x > 0: # Left neighbour
-                neighbours.append((y, x - 1))
-            if y > 0: # Neighbours above
-                neighbours.append((y-1, x))
-                if x < board_size-1:
-                    neighbours.append((y-1, x+1))
-            if y < board_size-1: # Neighbours below
-                neighbours.append((y+1, x))
-                if x > 0:
-                    neighbours.append((y+1, x-1))
-            for (ney, nex) in neighbours:
+            # Connect to nearby nodes of same color
+            for (ney, nex) in lookup[y, x]:
                 if piece == board[ney, nex]:
                     graph.add_edge((y, x), (ney, nex))
     
