@@ -1,5 +1,5 @@
 
-from utils import load_dataset, display_as_graph, booleanize_positions_3d
+from utils import load_dataset, display_as_graph, booleanize_positions_3d, display_position
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -67,9 +67,8 @@ def create3d_board_representation(position):
 #
 #print(booleanize_positions_v2(positions[1:2]))
 #
+board = np.zeros((7,7))
 
-t = (1, 0)
-
-arr = [[1, 2], [3, 4]]
-
-print(np.array(arr)[*t])
+board[3, 3] = -1
+board[3,4] = 1
+display_position(board)
