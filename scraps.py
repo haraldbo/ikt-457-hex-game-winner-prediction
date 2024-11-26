@@ -52,9 +52,23 @@ def create3d_board_representation(position):
     ax.set_aspect('equal')
 
     plt.show()
-    
 
-#positions, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = 10)
+
+
+def create_table_of_boardv2(board):
+    new_board = np.zeros((board.shape[0], board.shape[1] * 2), dtype=int)
+    for y in range(board.shape[0]):
+        for x in range(board.shape[1]):
+            if board[y, x] == 1:
+                new_board[y, x] = 1
+            
+            elif board[y,x] == -1:
+                new_board[y, x + board.shape[1]] = 1
+    
+    for y in range(new_board.shape[0]):
+        print("&".join(new_board[y].astype(str)))
+
+boards, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = 10)
 #
 #display_as_graph(positions[1])
 #create3d_board_representation(positions[1])
@@ -67,8 +81,46 @@ def create3d_board_representation(position):
 #
 #print(booleanize_positions_v2(positions[1:2]))
 #
-board = np.zeros((7,7))
+board1 = np.array([
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, -1, 0, 0, 0, 0],
+    [0, -1, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0],
+    [0, 1, 0, 0, -1, 0, 0],
+    [0, 0, 0, -1, 0, 0, 0],
+])
 
-board[3, 3] = -1
-board[3,4] = 1
-display_position(board)
+board2 = np.array([
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 1, 0],
+    [0, 0, 0, 1, 0, 1, 1],
+    [0, 0, 1, 0, 0, 0, 0],
+    [1, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0]
+])
+
+
+board3 = np.array([
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 1, 0],
+    [1, 1, 1, 1, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0]
+])
+
+
+board = np.array([
+    [0, -1, 0, 0],
+    [0, -1, 0, 1],
+    [0, 1, 0, 0],
+    [0, 0, 0, 0],
+])
+
+#create_table_of_boardv2(boards[1])
+
+
+display_position(board3)

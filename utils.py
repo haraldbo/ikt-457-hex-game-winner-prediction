@@ -39,7 +39,7 @@ def load_dataset(file_name, num_rows = None):
             
         return np.array(positions, dtype=np.int8), np.array(winners, dtype=np.int8)
 
-def display_position(position):
+def display_position(position: np.ndarray):
     img = np.full((250, 400, 3), 255)
 
     top = 25
@@ -47,6 +47,8 @@ def display_position(position):
     line_length = 20
     cos30 = math.cos(math.pi/6)
     sin30 = math.sin(math.pi/6)
+
+    board_size = position.shape[0]
     
     def draw_hexagon(x0, y0):    
         lines = [
@@ -74,7 +76,7 @@ def display_position(position):
         red_lines = []
         blue_lines = []
         
-        for i in range(7):
+        for i in range(board_size):
             x_top_start = int(left + i * 2 * line_length * cos30)
             # RED LINES:
             red_lines.append(
@@ -89,8 +91,8 @@ def display_position(position):
                     top, int(x_top_start + 2 * cos30 * line_length)
                 )
             )
-            y_bottom = int(top + 6 * (line_length + line_length * sin30)) + line_length
-            x_bottom_start = int(left + 6 * line_length * cos30 + i * 2 * line_length * cos30)
+            y_bottom = int(top + (board_size-1) * (line_length + line_length * sin30)) + line_length
+            x_bottom_start = int(left + (board_size-1) * line_length * cos30 + i * 2 * line_length * cos30)
             red_lines.append(
                 draw.line(
                     y_bottom, x_bottom_start, 
@@ -113,21 +115,21 @@ def display_position(position):
                     int(y_start + line_length), int(x_left_start)      
                 )
             )
-            if i < 6:
+            if i < (board_size-1):
                 blue_lines.append(
                     draw.line(
                         int(y_start + line_length), int(x_left_start), 
                         int(y_start + line_length * (1 + sin30)), int(x_left_start + line_length * cos30)      
                     )
                 )
-            x_right_start = left + (7 * line_length * 2 * cos30) + cos30 * line_length * i
+            x_right_start = left + (board_size * line_length * 2 * cos30) + cos30 * line_length * i
             blue_lines.append(
                 draw.line(
                     int(y_start), int(x_right_start), 
                     int(y_start + line_length), int(x_right_start)      
                 )
             )
-            if i < 6:
+            if i < (board_size-1):
                 blue_lines.append(
                     draw.line(
                         int(y_start + line_length), int(x_right_start), 
@@ -156,16 +158,16 @@ def display_position(position):
         img[rr, cc, 2] = 255 if p == 1 else 0 # B
         
             
-    for y in range(7):
-        for x in range(7):
+    for y in range(board_size):
+        for x in range(board_size):
             draw_hexagon(
                 int(left + x * 2 * line_length * cos30 + y * line_length * cos30), 
                 int(top + y * (line_length + line_length * sin30)))
 
     draw_board_edges()
 
-    for y in range(7):
-        for x in range(7):
+    for y in range(board_size):
+        for x in range(board_size):
             p = position[y, x]
             if p != 0:
                 draw_piece(x, y, p)
