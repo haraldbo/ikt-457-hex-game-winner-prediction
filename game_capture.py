@@ -8,24 +8,31 @@ import time
 import networkx as nx
 from networkx import has_path
 from pathlib import Path
+from random import randint
+
 
 config = {
     # Coordinates: (y, x)
-    "top": (225, 854), # Center of the topmost hexagon
-    "left": (564, 652), # Center of the leftmost hexagon
-    "new_game_button": (647, 1188),
-    "board_size": 9,
-    "blue_level_1": (1, 2), # radio button blue level 1
-    "red_level_1": (1, 2) # radio button red level 1
+    "top": (215, 817), # Center of the topmost hexagon
+    "left": (508, 649), # Center of the leftmost hexagon
+    "new_game_button": (579, 1108),
+    "blue_level_radios": [ # Screen location of blue radio buttons 1-3
+        (423, 1148), (423, 1199), (423, 1250) # Screen location of blue radio buttons 1-3 
+    ],
+    "red_level_radios": [
+        (318, 1148), (318, 1199), (318, 1250) # Screen location of blue radio buttons 1-3 
+    ],
+    "board_size": 9
 }
 
 def test_fps():
-    fps = 0
-    start = time.time_ns()
-    while time.time_ns() - start < 1_000_000_000:
-        fps += 1 
-        capture_board()
-    print(fps)
+    for i in range(10):
+        fps = 0
+        start = time.time_ns()
+        while time.time_ns() - start < 1_000_000_000:
+            fps += 1 
+            capture_board()
+        print(fps)
 
 def test_hex_coordinates():
     """
@@ -53,7 +60,7 @@ def piece_from_pixel_color(rgb):
         return 0
     elif rgb == (255, 0, 0): # Red
         return -1
-    elif rgb == (0, 0, 255): # Blu
+    elif rgb == (0, 0, 255): # Blue
         return 1
     else:
         raise ValueError(f"Unknown color: {rgb}")
@@ -71,23 +78,35 @@ def capture_board():
     x0 = config["top"][1]
 
     screen_img = ImageGrab.grab()
-    #print(screen_img.size)
+
     for y in range(board_size):
         for x in range(board_size):
-            y_screen = (y0 + y * dy) + dy * x
-            x_screen = (x0 - y * dx) + dx * x
-            #gui.moveTo(x_screen, y_screen)
+            y_screen = int((y0 + y * dy) + dy * x)
+            x_screen = int((x0 - y * dx) + dx * x)
             board[y][x] = piece_from_pixel_color(screen_img.getpixel((x_screen, y_screen)))
 
     return board
     
 def select_random_ai_level():
-    pass
+    blue_level = randint(0, 2)
+    red_level = randint(0, 2)
+    
+    yb,xb = config["blue_level_radios"][blue_level]
+    yr,xr = config["red_level_radios"][red_level]
+    
+    gui.moveTo(xb, yb)
+    #time.sleep(0.1)
+    gui.leftClick(xb, yb)
+    #time.sleep(0.05)
+    gui.moveTo(xr, yr)
+    #time.sleep(0.1)
+    gui.leftClick(xr, yr)
+    #time.sleep(0.1)
 
 def press_new_game_button():
     (y, x) = config["new_game_button"]
     gui.leftClick(x, y)
-    time.sleep(0.1)
+    #time.sleep(0.05)
 
 def add_piece(board_graph: nx.Graph, y, x, piece):
     board_size = config["board_size"]
@@ -201,7 +220,6 @@ def capture_game():
         if board in boards:
             if time.time_ns() > timeout_time_ns:
                 raise TimeoutError("Timed out waiting for new move to be done")
-            
             continue
         
         timeout_time_ns = time.time_ns() + 1_000_000_000 * 2
@@ -221,17 +239,12 @@ def append_to_dataset_file(file_name, history, winner):
             file.write(f"{x},")
         file.write(f"{winner}\n")
 def start():
-    i = 0
-    dataset_size = 100
     while True:
         try:
             history, winner = capture_game()
             append_to_dataset_file("9x9_games.txt", history, winner)
-            select_random_ai_level()
-            time.sleep(3)
-            i += 1
-            if i == dataset_size:
-                exit(0)
+            select_random_ai_level() # Try to diversify the dataset by changing AI level
+            time.sleep(4)
         except TimeoutError as e:
             print(e)
 

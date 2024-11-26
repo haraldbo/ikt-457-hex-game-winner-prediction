@@ -68,6 +68,15 @@ def create_table_of_boardv2(board):
     for y in range(new_board.shape[0]):
         print("&".join(new_board[y].astype(str)))
 
+def get_unique_games():
+    games = set()
+    with open("9x9_games.txt") as file:
+        for line in file.readlines():
+            games.add(line)
+    
+    return games
+
+
 boards, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = 10)
 #
 #display_as_graph(positions[1])
@@ -123,4 +132,5 @@ board = np.array([
 #create_table_of_boardv2(boards[1])
 
 
-display_position(board3)
+#display_position(board3)
+print(len(get_unique_games()))
