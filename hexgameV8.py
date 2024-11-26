@@ -92,8 +92,7 @@ def populate_graphs(X: np.ndarray, graphs: Graphs, board_size):
         
         board = X[graph_id]
         board_graph = create_graph(board)
-        # Sjekk om dette kan effektiviseres:
-        # Bruke et av nx sine methods, ie. nx.all_pairs_dijkstra_path_length
+        
         for (y0, x0) in board_coordinates:
             if board[y0,x0] == EMPTY:
                 graphs.add_graph_node_property(graph_id, node_name, get_empty_symbol(y0, x0))
@@ -116,18 +115,26 @@ args = default_args()
 
 # Create train data
 
-num_rows = 50000
-board_size = 7
-X, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
+num_rows = None
+board_size = 9
+X, Y = load_dataset("hex_9x9_2moves.csv", num_rows = num_rows)
 
 Y = np.where(Y > 0, 1, 0)
 
 # First 80% of data is training, the remaining is test
-split_index = int(0.8 * num_rows)
+split_index = int(0.8 * len(X))
 X_train = X[:split_index]
 Y_train = Y[:split_index]
 X_test = X[split_index:]
 Y_test = Y[split_index:]
+
+print("Train balance:")
+unique, counts = np.unique(Y_train, return_counts=True)
+print(np.asarray((unique, counts)).T)
+
+print("Test balance:")
+unique, counts = np.unique(Y_test, return_counts=True)
+print(np.asarray((unique, counts)).T)
 
 print("Creating training graphs.")
 graphs_train = Graphs(

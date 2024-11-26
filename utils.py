@@ -349,7 +349,8 @@ def create_n_moves_before_the_end_dataset(file_name, board_size, n, beginning_pl
     boards = []
     winners = []
     for line in history_file:
-        # Skip if game already recorded
+        
+        # To only save games once (make sure they are unique)
         if line in games:
             continue
         games.add(line)
@@ -373,7 +374,7 @@ def save_dataset(boards:list[np.ndarray], winners, file_name):
         for i in range(board_size ** 2):
             y = i // board_size
             x = i % board_size
-            f.write(f"cell_{y}_{x}")
+            f.write(f"cell_{y}_{x},")
         f.write("winner\n")
         
         # Populating dataset
