@@ -92,7 +92,8 @@ def populate_graphs(X: np.ndarray, graphs: Graphs, board_size):
         
         board = X[graph_id]
         board_graph = create_graph(board)
-        
+        # Sjekk om dette kan effektiviseres:
+        # Bruke et av nx sine methods, ie. nx.all_pairs_dijkstra_path_length
         for (y0, x0) in board_coordinates:
             if board[y0,x0] == EMPTY:
                 graphs.add_graph_node_property(graph_id, node_name, get_empty_symbol(y0, x0))
