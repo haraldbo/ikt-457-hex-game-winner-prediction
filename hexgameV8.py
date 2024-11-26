@@ -131,10 +131,12 @@ Y_test = Y[split_index:]
 print("Train balance:")
 unique, counts = np.unique(Y_train, return_counts=True)
 print(np.asarray((unique, counts)).T)
+print(counts/counts.sum())
 
 print("Test balance:")
 unique, counts = np.unique(Y_test, return_counts=True)
 print(np.asarray((unique, counts)).T)
+print(counts/counts.sum())
 
 print("Creating training graphs.")
 graphs_train = Graphs(
