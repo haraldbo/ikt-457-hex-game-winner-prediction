@@ -242,7 +242,7 @@ def start():
     while True:
         try:
             history, winner = capture_game()
-            append_to_dataset_file("9x9_games.txt", history, winner)
+            append_to_dataset_file("9x9_games_red.txt", history, winner)
             select_random_ai_level() # Try to diversify the dataset by changing AI level
             time.sleep(4)
         except TimeoutError as e:

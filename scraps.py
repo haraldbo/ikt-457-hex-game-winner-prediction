@@ -1,7 +1,8 @@
 
-from utils import load_dataset, display_as_graph, booleanize_positions_3d, display_position
+from utils import load_dataset, display_as_graph, booleanize_positions_3d, display_position, get_board_at_n_moves_before_the_end, create_n_moves_before_the_end_dataset, save_dataset
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
 
 def write_csv_example():
     results_csv = open("results.csv", mode = "w+")
@@ -130,7 +131,17 @@ board = np.array([
 ])
 
 #create_table_of_boardv2(boards[1])
-
-
 #display_position(board3)
-print(len(get_unique_games()))
+
+
+
+boards, winners = create_n_moves_before_the_end_dataset("9x9_games_red.txt", 9, 2, -1)
+
+save_dataset(boards, winners, Path(__file__).parent / "dataset"/ "dataset9x9.csv")
+
+
+boards, winners = load_dataset("dataset9x9.csv")
+
+for b in boards:
+    display_position(b)
+    print(b)

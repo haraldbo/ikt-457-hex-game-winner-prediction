@@ -24,14 +24,16 @@ def load_dataset(file_name, num_rows = None):
         positions = []
         winners = []
         for line_number, line in enumerate(tqdm(file, desc = "Loading dataset", unit = "Rows", total = num_rows)):
-            position = [[0 for i in range(7)] for j in range(7)]
             entries = line.split(",")
-            for i in range(49):
-                y = i // 7
-                x = i % 7
+            board_slots = len(entries)-1
+            board_size = int(math.sqrt(board_slots))
+            position = [[0 for i in range(board_size)] for j in range(board_size)]
+            for i in range(board_slots):
+                y = i // board_size
+                x = i % board_size
                 position[y][x] = entries[i]
             
-            winners.append(entries[49])
+            winners.append(entries[board_slots])
             positions.append(position)
             
             if (line_number+1) == num_rows:
@@ -40,7 +42,7 @@ def load_dataset(file_name, num_rows = None):
         return np.array(positions, dtype=np.int8), np.array(winners, dtype=np.int8)
 
 def display_position(position: np.ndarray):
-    img = np.full((250, 400, 3), 255)
+    img = np.full((300, 500, 3), 255)
 
     top = 25
     left = 25
@@ -326,3 +328,57 @@ def display_as_graph(board):
     plt.show()
 
     plt.clf()
+
+def get_board_at_n_moves_before_the_end(board_size, history, n, beginning_player):
+    board = np.zeros((board_size, board_size), dtype=int)
+    current_player = beginning_player
+    if n == 0:
+        selected_part_of_history = history
+    else:
+        selected_part_of_history = history[:-n]
+    for mv in selected_part_of_history:
+        y = mv // board_size
+        x = mv % board_size
+        board[y,x] = current_player
+        current_player *= -1
+    return board
+
+def create_n_moves_before_the_end_dataset(file_name, board_size, n, beginning_player):
+    history_file = open(file_name)
+    games = set()
+    boards = []
+    winners = []
+    for line in history_file:
+        # Skip if game already recorded
+        if line in games:
+            continue
+        games.add(line)
+        
+        data = line.strip().split(",")
+        data = [int(i) for i in data]
+        
+        winner = data[-1]
+        history = data[:-1]
+        board = get_board_at_n_moves_before_the_end(board_size, history, n, beginning_player)
+        boards.append(board)
+        winners.append(winner)
+        
+    history_file.close()
+    return boards, winners
+
+def save_dataset(boards:list[np.ndarray], winners, file_name):
+    board_size = boards[0].shape[0]
+    with open(file_name, "w+") as f:
+        # Creating same CSV headers as kaggle dataset
+        for i in range(board_size ** 2):
+            y = i // board_size
+            x = i % board_size
+            f.write(f"cell_{y}_{x}")
+        f.write("winner\n")
+        
+        # Populating dataset
+        for i in range(len(boards)):
+            board = boards[i]
+            for j in board.flatten():
+                f.write(f"{j},")
+            f.write(f"{winners[i]}\n")
