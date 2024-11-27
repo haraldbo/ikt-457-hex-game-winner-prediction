@@ -5,9 +5,9 @@ Based on connections and empty slots
 from GraphTsetlinMachine.graphs import Graphs
 import numpy as np
 from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
-from time import time
+import time
 import argparse
-from utils import load_dataset, create_graph, get_neighbour_lookup, get_all_board_coordinates, get_all_possible_connections
+from utils import load_dataset, create_graph, get_neighbour_lookup, get_all_board_coordinates, get_all_possible_connections, append_to_statistics_file
 from networkx import has_path
 from tqdm import tqdm
 import networkx as nx
@@ -178,16 +178,22 @@ tm = MultiClassGraphTsetlinMachine(
 )
 
 print("Starting training..")
+TS = time.strftime("%Y%m%d_%H%M%S")
+stats_file = f"train_{TS}.csv"
+print("Appending statistics to", stats_file)
+append_to_statistics_file(stats_file, "train accuracy", "test accuracy")
 for i in range(args.epochs):
-    start_training = time()
+    start_training = time.time()
     tm.fit(graphs_train, Y_train, epochs=1, incremental=True)
-    stop_training = time()
+    stop_training = time.time()
 
-    start_testing = time()
+    start_testing = time.time()
     result_test = 100*(tm.predict(graphs_test) == Y_test).mean()
-    stop_testing = time()
+    stop_testing = time.time()
 
     result_train = 100*(tm.predict(graphs_train) == Y_train).mean()
+    
+    append_to_statistics_file(stats_file, str(result_train), str(result_test))
 
     print("%d %.2f %.2f %.2f %.2f" % (i, result_train, result_test, stop_training-start_training, stop_testing-start_testing))
 

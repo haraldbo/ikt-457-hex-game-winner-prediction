@@ -1,8 +1,11 @@
 
-from utils import load_dataset, display_as_graph, booleanize_positions_3d, display_position, get_board_at_n_moves_before_the_end, create_n_moves_before_the_end_dataset, save_dataset
+from utils import load_dataset, display_as_graph, booleanize_positions_3d, \
+    display_position, get_board_at_n_moves_before_the_end, create_n_moves_before_the_end_dataset, \
+        save_dataset, create_accuracy_plot
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
+import pandas as pd
 
 def write_csv_example():
     results_csv = open("results.csv", mode = "w+")
@@ -133,14 +136,17 @@ board = np.array([
 #create_table_of_boardv2(boards[1])
 #display_position(board3)
 
+def process_captured_dataset():
+    boards, winners = create_n_moves_before_the_end_dataset(Path(__file__).parent / "captured" / "combined_red.txt", 9, 5, -1)
 
+    print(len(boards))
 
-boards, winners = create_n_moves_before_the_end_dataset(Path(__file__).parent / "captured" / "combined_red.txt", 9, 5, -1)
+    save_dataset(boards, winners, Path(__file__).parent / "dataset"/ "hex_9x9_5moves.csv")
 
-print(len(boards))
+    boards, winners = load_dataset("hex_9x9_5moves.csv")
 
-save_dataset(boards, winners, Path(__file__).parent / "dataset"/ "hex_9x9_5moves.csv")
+    print("Num unique games:", len(boards))
 
-boards, winners = load_dataset("hex_9x9_5moves.csv")
+csv = pd.read_csv("train_20241127_104205.csv")
 
-print("Num unique games:", len(boards))
+create_accuracy_plot("accuracy.png", csv["train accuracy"], csv["test accuracy"])

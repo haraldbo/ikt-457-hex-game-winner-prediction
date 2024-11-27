@@ -397,3 +397,19 @@ def save_dataset(boards:list[np.ndarray], winners, file_name):
             for j in board.flatten():
                 f.write(f"{j},")
             f.write(f"{winners[i]}\n")
+            
+def append_to_statistics_file(file_name, *statistics):
+    file = open(file_name, mode = "a+")
+    file.write(",".join(statistics))
+    file.write("\n")
+    file.close()
+
+def create_accuracy_plot(file_name, train, test):
+    plt.clf()
+    plt.plot(train, label = "Train")
+    plt.plot(test, label = "Test")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    #plt.show()
+    plt.savefig(file_name)
