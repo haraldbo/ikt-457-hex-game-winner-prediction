@@ -10,6 +10,7 @@ import networkx as nx
 
 neighbours_lookups = {}
 board_coordinates_lookups = {}
+all_possible_connections_lookup = {}
     
 def load_dataset(file_name, num_rows = None):
     """
@@ -272,7 +273,20 @@ def get_all_board_coordinates(board_size):
     board_coordinates_lookups[board_size] = board_coordinates
     
     return board_coordinates
-    
+
+def get_all_possible_connections(board_size):
+    global all_possible_connections_lookup
+    if board_size in all_possible_connections_lookup:
+        return all_possible_connections_lookup[board_size]
+
+    board_coordinates = get_all_board_coordinates(board_size)
+    all_possible_connections = []
+    for i in range(len(board_coordinates)):
+        for j in range(i+1, len(board_coordinates)):
+            connection = (*board_coordinates[i], *board_coordinates[j])
+            all_possible_connections.append(connection)
+    all_possible_connections_lookup[board_size] = all_possible_connections
+    return all_possible_connections
 
 def create_graph(board):
     graph = nx.Graph()

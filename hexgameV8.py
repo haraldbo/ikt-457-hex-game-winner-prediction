@@ -7,14 +7,14 @@ import numpy as np
 from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
 from time import time
 import argparse
-from utils import load_dataset, create_graph, get_neighbour_lookup, get_all_board_coordinates
+from utils import load_dataset, create_graph, get_neighbour_lookup, get_all_board_coordinates, get_all_possible_connections
 from networkx import has_path
 from tqdm import tqdm
 import networkx as nx
 
-BLACK = -1
+RED = -1
 EMPTY = 0
-WHITE = 1
+BLUE = 1
 
 lookups = {}
 
@@ -45,28 +45,31 @@ def get_all_symbols(board_size):
     board_coordinates = get_all_board_coordinates(board_size)
     for (y0, x0) in board_coordinates:
         # Empty slots
-        symbols.append(get_empty_symbol(y0, x0))
-        for (y1, x1) in board_coordinates:
-            # White connection from i to j
-            symbols.append(get_connection_symbol(WHITE, y0, x0, y1, x1))
-
-            # Black connection from i to j
-            symbols.append(get_connection_symbol(BLACK, y0, x0, y1, x1))
+        symbols.append(get_red_symbol(y0, x0))
+        symbols.append(get_blue_symbol(y0, x0))
+        
+    for (y0, x0, y1, x1) in get_all_possible_connections(board_size):
+        symbols.append(get_connection_symbol(RED, y0, x0, y1, x1))
+        symbols.append(get_connection_symbol(BLUE, y0, x0, y1, x1))
     return symbols
     
 def get_connection_symbol(player_color, y0, x0, y1, x1):
-    if player_color == BLACK:
+    if player_color == RED:
         return f"CB_{y0}_{x0}_{y1}_{x1}"
-    elif player_color == WHITE:
+    elif player_color == BLUE:
         return f"CW_{y0}_{x0}_{y1}_{x1}"
     else:
         raise ValueError(f"Invalid player_color: {player_color}")
     
-def get_empty_symbol(y, x):
-    return f"E_{y}_{x}"
+def get_red_symbol(y, x):
+    return f"R_{y}_{x}"
+    
+def get_blue_symbol(y, x):
+    return f"B_{y}_{x}"
     
 def populate_graphs(X: np.ndarray, graphs: Graphs, board_size):
     board_coordinates = get_all_board_coordinates(board_size)
+    all_possible_connections = get_all_possible_connections(board_size)
     
     progress_bar = tqdm(total = X.shape[0] * 3, desc = "Creating graphs", leave = False)
     node_name = "The One"
@@ -93,18 +96,22 @@ def populate_graphs(X: np.ndarray, graphs: Graphs, board_size):
         board = X[graph_id]
         board_graph = create_graph(board)
         
-        for (y0, x0) in board_coordinates:
-            if board[y0,x0] == EMPTY:
-                graphs.add_graph_node_property(graph_id, node_name, get_empty_symbol(y0, x0))
-                continue
-            
-            for (x1, y1) in board_coordinates:
-                if board[y0, x0] == board[y1, x1] and has_path(board_graph, (y0, x0), (y1, x1)):
+        for (x, y) in board_coordinates:
+            if board[y,x] == RED:
+                graphs.add_graph_node_property(graph_id, node_name, get_red_symbol(y, x))
+            elif board[y,x] == BLUE:
+                graphs.add_graph_node_property(graph_id, node_name, get_blue_symbol(y, x))
+                
+        for (y0, x0, y1, x1) in all_possible_connections:
+            if y0 == y1 and x0 == x1:
+                raise ValueError("This should never happen")
+            if board[y0, x0] == board[y1, x1] and has_path(board_graph, (y0, x0), (y1, x1)):
                     graphs.add_graph_node_property(
                         graph_id, 
                         node_name, 
                         get_connection_symbol(board[y0, x0], y0, x0, y1, x1)
                     )
+
         progress_bar.update(1)
         progress_bar.refresh()
                     
@@ -117,7 +124,9 @@ args = default_args()
 
 num_rows = None
 board_size = 9
-X, Y = load_dataset("hex_9x9_2moves.csv", num_rows = num_rows)
+X, Y = load_dataset("hex_9x9_5moves.csv", num_rows = num_rows)
+print("Possible connections: ", len(get_all_possible_connections(board_size)))
+print("Total number of symbols: ", len(get_all_symbols(board_size)))
 
 Y = np.where(Y > 0, 1, 0)
 
