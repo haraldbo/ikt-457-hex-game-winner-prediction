@@ -135,12 +135,12 @@ board = np.array([
 
 
 
-boards, winners = create_n_moves_before_the_end_dataset(Path(__file__).parent / "captured" / "combined_red.txt", 9, 2, -1)
+boards, winners = create_n_moves_before_the_end_dataset(Path(__file__).parent / "captured" / "combined_red.txt", 9, 5, -1)
 
 print(len(boards))
 
-save_dataset(boards, winners, Path(__file__).parent / "dataset"/ "hex_9x9_2moves.csv")
+save_dataset(boards, winners, Path(__file__).parent / "dataset"/ "hex_9x9_5moves.csv")
 
-boards, winners = load_dataset("hex_9x9_2moves.csv")
+boards, winners = load_dataset("hex_9x9_5moves.csv")
 
 print("Num unique games:", len(boards))
