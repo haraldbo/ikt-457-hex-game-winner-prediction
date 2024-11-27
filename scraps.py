@@ -146,7 +146,25 @@ def process_captured_dataset():
     boards, winners = load_dataset("hex_9x9_5moves.csv")
 
     print("Num unique games:", len(boards))
+    
+def create_img_for_2_moves_before_end():
+    file = open(Path(__file__).parent / "captured" / "combined_red.txt")
+    line = file.readline()
+    data = line.strip().split(",")
+    data = [int(i) for i in data]
+    winner = data[-1]
+    history = data[:-1]
+    board = get_board_at_n_moves_before_the_end(9, history, 0, -1)
+    display_position(board)
 
-csv = pd.read_csv("train_20241127_104205.csv")
+    board = get_board_at_n_moves_before_the_end(9, history, 2, -1)
+    display_position(board)
+    
+    board = get_board_at_n_moves_before_the_end(9, history, 5, -1)
+    display_position(board)
+    
+create_img_for_2_moves_before_end()
 
-create_accuracy_plot("accuracy.png", csv["train accuracy"], csv["test accuracy"])
+#csv = pd.read_csv("train_20241127_104205.csv")
+#
+#create_accuracy_plot("accuracy.png", csv["train accuracy"], csv["test accuracy"])
