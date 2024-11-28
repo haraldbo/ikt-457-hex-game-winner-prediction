@@ -359,16 +359,10 @@ def get_board_at_n_moves_before_the_end(board_size, history, n, beginning_player
 
 def create_n_moves_before_the_end_dataset(file_name, board_size, n, beginning_player):
     history_file = open(file_name)
-    games = set()
     boards = []
     winners = []
     for line in history_file:
-        
         # To only save games once (make sure they are unique)
-        if line in games:
-            continue
-        games.add(line)
-        
         data = line.strip().split(",")
         data = [int(i) for i in data]
         

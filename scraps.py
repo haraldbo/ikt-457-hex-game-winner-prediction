@@ -137,12 +137,27 @@ board = np.array([
 #display_position(board3)
 
 def process_captured_dataset():
-    boards, winners = create_n_moves_before_the_end_dataset(Path(__file__).parent / "captured" / "combined_red.txt", 9, 5, -1)
+    # Get boards and winner at n moves before the end
+    bs, ws = create_n_moves_before_the_end_dataset(Path(__file__).parent / "captured" / "combined_red.txt", 9, 5, -1)
 
-    print(len(boards))
-
+    # Filter out boards that are equal:
+    boards = []
+    winners = []
+    
+    bset = set()
+    for (b,w) in zip(bs, ws):
+        boardstring = ",".join(b.flatten().astype(str))
+        if boardstring in bset:
+            continue
+        
+        bset.add(boardstring)
+        boards.append(b)
+        winners.append(w)
+    
+    # Save to csv file
     save_dataset(boards, winners, Path(__file__).parent / "dataset"/ "hex_9x9_5moves.csv")
 
+    # Test that it loads and print size of dataset
     boards, winners = load_dataset("hex_9x9_5moves.csv")
 
     print("Num unique games:", len(boards))
@@ -163,8 +178,8 @@ def create_img_for_2_moves_before_end():
     board = get_board_at_n_moves_before_the_end(9, history, 5, -1)
     display_position(board)
     
-create_img_for_2_moves_before_end()
-
+#create_img_for_2_moves_before_end()
+process_captured_dataset()
 #csv = pd.read_csv("train_20241127_104205.csv")
 #
 #create_accuracy_plot("accuracy.png", csv["train accuracy"], csv["test accuracy"])
