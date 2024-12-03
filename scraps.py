@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 def write_csv_example():
     results_csv = open("results.csv", mode = "w+")
@@ -136,7 +137,7 @@ board = np.array([
 #create_table_of_boardv2(boards[1])
 #display_position(board3)
 
-def process_captured_dataset():
+def create_dataset_from_captured_dataset():
     # Get boards and winner at n moves before the end
     bs, ws = create_n_moves_before_the_end_dataset(Path(__file__).parent / "captured" / "combined_red.txt", 9, 5, -1)
 
@@ -162,6 +163,15 @@ def process_captured_dataset():
 
     print("Num unique games:", len(boards))
     
+def create_dataset_splits():
+    X, Y = load_dataset("hex_9x9_2moves.csv")
+    
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.2)
+    
+    save_dataset(X_train, Y_train, Path(__file__).parent / "dataset"/ "hex_9x9_2moves_train.csv")
+    save_dataset(X_test, Y_test, Path(__file__).parent / "dataset"/ "hex_9x9_2moves_test.csv")
+    
+    
 def create_img_for_2_moves_before_end():
     file = open(Path(__file__).parent / "captured" / "combined_red.txt")
     line = file.readline()
@@ -179,7 +189,8 @@ def create_img_for_2_moves_before_end():
     display_position(board)
     
 #create_img_for_2_moves_before_end()
-process_captured_dataset()
+#create_dataset_from_captured_dataset()
 #csv = pd.read_csv("train_20241127_104205.csv")
 #
 #create_accuracy_plot("accuracy.png", csv["train accuracy"], csv["test accuracy"])
+create_dataset_splits()
