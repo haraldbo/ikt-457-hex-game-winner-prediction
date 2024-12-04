@@ -7,11 +7,6 @@ import numpy as np
 from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
-
-def write_csv_example():
-    results_csv = open("results.csv", mode = "w+")
-    results_csv.write(f"{epoch},{train_accuracy},{test_accuracy}")
-    results_csv.close()
     
 def create3d_board_representation(position):
     """
@@ -81,62 +76,6 @@ def get_unique_games():
     
     return games
 
-
-boards, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = 10)
-#
-#display_as_graph(positions[1])
-#create3d_board_representation(positions[1])
-#position = positions[1]
-#winner = winners[1]
-#
-#print(position)
-#print(winner)
-#display_position(position)
-#
-#print(booleanize_positions_v2(positions[1:2]))
-#
-board1 = np.array([
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, -1, 0, 0, 0, 0],
-    [0, -1, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0, 0, 0],
-    [0, 1, 0, 0, -1, 0, 0],
-    [0, 0, 0, -1, 0, 0, 0],
-])
-
-board2 = np.array([
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 1, 0],
-    [0, 0, 0, 1, 0, 1, 1],
-    [0, 0, 1, 0, 0, 0, 0],
-    [1, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0]
-])
-
-
-board3 = np.array([
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 1, 0],
-    [1, 1, 1, 1, 1, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0]
-])
-
-
-board = np.array([
-    [0, -1, 0, 0],
-    [0, -1, 0, 1],
-    [0, 1, 0, 0],
-    [0, 0, 0, 0],
-])
-
-#create_table_of_boardv2(boards[1])
-#display_position(board3)
-
 def create_dataset_from_captured_dataset():
     # Get boards and winner at n moves before the end
     bs, ws = create_n_moves_before_the_end_dataset(Path(__file__).parent / "captured" / "combined_red.txt", 9, 5, -1)
@@ -188,9 +127,45 @@ def create_img_for_2_moves_before_end():
     board = get_board_at_n_moves_before_the_end(9, history, 5, -1)
     display_position(board)
     
+
+def create_2_moves_before_the_end_param_search_plot():
+    csv = pd.read_csv(Path(__file__).parent / "report-performance-analysis" / "grid search 2 moves before the end" / "number_of_clauses_s_values_plot_data_20241203_111921.csv")
+    
+    s_values = [(10 + i * 2) for i in range(10)]
+
+    for s in s_values:
+        rows = csv[csv["s"] == s]
+        plt.plot(rows["number of clauses"], rows["max accuracy"], label = f"S={s}")
+
+
+    plt.xlabel("Number of clauses")
+    plt.ylabel("Accuracy")
+
+    plt.legend()
+    plt.show()
+
+
+
+#boards, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = 10)
+#
+#display_as_graph(positions[1])
+#create3d_board_representation(positions[1])
+#position = positions[1]
+#winner = winners[1]
+#
+#print(position)
+#print(winner)
+#display_position(position)
+#
+#print(booleanize_positions_v2(positions[1:2]))
+#
+
+#create_table_of_boardv2(boards[1])
+#display_position(board3)
 #create_img_for_2_moves_before_end()
 #create_dataset_from_captured_dataset()
 #csv = pd.read_csv("train_20241127_104205.csv")
 #
 #create_accuracy_plot("accuracy.png", csv["train accuracy"], csv["test accuracy"])
-create_dataset_splits()
+#create_dataset_splits()
+create_2_moves_before_the_end_param_search_plot()
