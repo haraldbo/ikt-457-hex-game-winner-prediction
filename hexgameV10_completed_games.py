@@ -22,8 +22,8 @@ def default_args(**kwargs):
     parser.add_argument("--T", default=20000, type=int)
     parser.add_argument("--s", default=17.0, type=float)
     parser.add_argument("--depth", default=1, type=int)
-    parser.add_argument("--hypervector-size", default=2048, type=int)
-    parser.add_argument("--hypervector-bits", default=1, type=int)
+    parser.add_argument("--hypervector-size", default=512, type=int)
+    parser.add_argument("--hypervector-bits", default=2, type=int)
     parser.add_argument("--message-size", default=256, type=int)
     parser.add_argument("--message-bits", default=1, type=int)
     parser.add_argument('--double-hashing', dest='double_hashing', default=False, action='store_true')
@@ -152,13 +152,13 @@ def train():
     args = default_args()
     # Create train data
 
-    num_rows = None
-    board_size = 9
+    num_rows = None # All rows
+    board_size = 7
     print("Total number of symbols: ", len(get_all_symbols(board_size)))
     print("Possible connections: ", len(get_all_possible_connections(board_size)))
 
-    X_train, Y_train = load_dataset("hex_9x9_2moves_train.csv", num_rows = num_rows)
-    X_test, Y_test = load_dataset("hex_9x9_2moves_test.csv", num_rows = num_rows)
+    X_train, Y_train = load_dataset("hex_games_1_000_000_size_7_train.csv", num_rows = num_rows)
+    X_test, Y_test = load_dataset("hex_games_1_000_000_size_7_test.csv", num_rows = num_rows)
     
     # make -1 correspond to class 0, and 1 to 1
     Y_train = np.where(Y_train > 0, 1, 0)
@@ -190,48 +190,43 @@ def train():
     print("Done.")
 
 
-    number_of_clauses = [(i+1) * 2000 for i in range(10)]
-    s_values = [(10+i*2) for i in range(11)] # From 10 to 30
+    number_of_clauses = [(i+1) * 100 for i in range(100)]
 
     TS = time.strftime("%Y%m%d_%H%M%S")
-    stats_file_name = f"number_of_clauses_s_values_plot_data_{TS}.csv"
+    stats_file_name = f"number_of_clauses_accuracy_{TS}.csv"
     print("Appending statistics to", stats_file_name)
-    append_to_statistics_file(stats_file_name, "max accuracy", "number of clauses", "s")
+    append_to_statistics_file(stats_file_name, "max accuracy", "number of clauses")
 
     for nc in number_of_clauses:
-        for s in s_values:
-            tm = MultiClassGraphTsetlinMachine(
-                number_of_clauses = nc,
-                T = args.T,
-                s = s,
-                number_of_state_bits = args.number_of_state_bits,
-                depth = args.depth,
-                message_size = args.message_size,
-                message_bits = args.message_bits,
-                max_included_literals = args.max_included_literals,
-                double_hashing = args.double_hashing,
-                grid=(16*13,1,1),
-                block=(128,1,1)
-            )
-
-            max_accuracy = 0
-            for i in range(args.epochs):
-                start_training = time.time()
-                tm.fit(graphs_train, Y_train, epochs=1, incremental=True)
-                stop_training = time.time()
-
-                start_testing = time.time()
-                result_test = 100*(tm.predict(graphs_test) == Y_test).mean()
-                stop_testing = time.time()
-
-                if result_test > max_accuracy:
-                    max_accuracy = result_test
-                    print("New record accuracy:", max_accuracy)
-                result_train = 100*(tm.predict(graphs_train) == Y_train).mean()
-
-                print("%d %.2f %.2f %.2f %.2f" % (i, result_train, result_test, stop_training-start_training, stop_testing-start_testing))
+        tm = MultiClassGraphTsetlinMachine(
+            number_of_clauses = nc,
+            T = args.T,
+            s = 12,
+            number_of_state_bits = args.number_of_state_bits,
+            depth = args.depth,
+            message_size = args.message_size,
+            message_bits = args.message_bits,
+            max_included_literals = args.max_included_literals,
+            double_hashing = args.double_hashing,
+            grid=(16*13,1,1),
+            block=(128,1,1)
+        )
+        
+        max_accuracy = 0
+        for i in range(args.epochs):
+            start_training = time.time()
+            tm.fit(graphs_train, Y_train, epochs=1, incremental=True)
+            stop_training = time.time()
+            start_testing = time.time()
+            result_test = 100*(tm.predict(graphs_test) == Y_test).mean()
+            stop_testing = time.time()
+            if result_test > max_accuracy:
+                max_accuracy = result_test
+                print("New record accuracy:", max_accuracy)
+            result_train = 100*(tm.predict(graphs_train) == Y_train).mean()
+            print("%d %.2f %.2f %.2f %.2f" % (i, result_train, result_test, stop_training-start_training, stop_testing-start_testing))
             
-            append_to_statistics_file(stats_file_name, str(max_accuracy), str(nc), str(s))
+        append_to_statistics_file(stats_file_name, str(max_accuracy), str(nc))
 
 
 if __name__ == '__main__':  
