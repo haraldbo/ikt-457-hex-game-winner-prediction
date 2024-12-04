@@ -164,12 +164,12 @@ def create_dataset_from_captured_dataset():
     print("Num unique games:", len(boards))
     
 def create_dataset_splits():
-    X, Y = load_dataset("hex_9x9_5moves.csv")
+    X, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows=100_000)
     
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.2)
     
-    save_dataset(X_train, Y_train, Path(__file__).parent / "dataset"/ "hex_9x9_5moves_train.csv")
-    save_dataset(X_test, Y_test, Path(__file__).parent / "dataset"/ "hex_9x9_5moves_test.csv")
+    save_dataset(X_train, Y_train, Path(__file__).parent / "dataset"/ "hex_games_1_000_000_size_7_train.csv")
+    save_dataset(X_test, Y_test, Path(__file__).parent / "dataset"/ "hex_games_1_000_000_size_7_test.csv")
     
     
 def create_img_for_2_moves_before_end():

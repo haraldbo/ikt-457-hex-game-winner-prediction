@@ -1,0 +1,9 @@
+In this test we attempted to find a well performing combination of s and number of clauses. 
+- s started at 10 and ended at 30 with interval of 2
+- number of clauses started at 2000 and ended at 20 000 
+
+hypervector size: 2048
+hypervector bits: 1
+number of state bits: 16
+T value: 20k
+Epochs: 100
