@@ -143,7 +143,18 @@ def create_2_moves_before_the_end_param_search_plot():
 
     plt.legend()
     plt.show()
+    
+def create_number_of_clauses_completed_games_plot():
+    csv = pd.read_csv(Path(__file__).parent / "report-performance-analysis" / "completed games" / "number_of_clauses_accuracy_20241207_095217.csv")
 
+    num_clauses = csv["number of clauses"]
+    acc = csv["max accuracy"]
+
+    plt.plot(num_clauses, acc)
+    plt.xlabel("Number of clauses")
+    plt.ylabel("Accuracy")
+
+    plt.show()
 
 
 #boards, winners = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = 10)
@@ -168,4 +179,4 @@ def create_2_moves_before_the_end_param_search_plot():
 #
 #create_accuracy_plot("accuracy.png", csv["train accuracy"], csv["test accuracy"])
 #create_dataset_splits()
-create_2_moves_before_the_end_param_search_plot()
+create_number_of_clauses_completed_games_plot()

@@ -1,0 +1,6 @@
+T: 20000
+hv size: 1024
+hv bits: 2
+message size: 256
+message bits: 2
+state bits: 16
