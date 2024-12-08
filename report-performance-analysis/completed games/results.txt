@@ -1,0 +1,6 @@
+hypervector bits: 2
+hypervector size: 512
+s value: 17
+T: 20k
+epochs: 100
+number of state bits: 16

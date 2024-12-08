@@ -1,7 +1,3 @@
-"""
-Based on connections and empty slots
-"""
-
 from GraphTsetlinMachine.graphs import Graphs
 import numpy as np
 from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
