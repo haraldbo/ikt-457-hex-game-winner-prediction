@@ -128,10 +128,10 @@ def create_img_for_2_moves_before_end():
     display_position(board)
     
 
-def create_2_moves_before_the_end_param_search_plot():
-    csv = pd.read_csv(Path(__file__).parent / "report-performance-analysis" / "grid search 2 moves before the end" / "number_of_clauses_s_values_plot_data_20241203_111921.csv")
+def create_n_moves_before_the_end_param_search_plot():
+    csv = pd.read_csv(Path(__file__).parent / "report-performance-analysis" / "5 moves before the end" / "5_before_performance_20241208_130039.csv")
     
-    s_values = [(10 + i * 2) for i in range(10)]
+    s_values = [10, 20, 30]
 
     for s in s_values:
         rows = csv[csv["s"] == s]
@@ -179,4 +179,4 @@ def create_number_of_clauses_completed_games_plot():
 #
 #create_accuracy_plot("accuracy.png", csv["train accuracy"], csv["test accuracy"])
 #create_dataset_splits()
-create_number_of_clauses_completed_games_plot()
+create_n_moves_before_the_end_param_search_plot()
