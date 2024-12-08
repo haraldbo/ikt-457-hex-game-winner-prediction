@@ -157,8 +157,8 @@ def train():
     print("Total number of symbols: ", len(get_all_symbols(board_size)))
     print("Possible connections: ", len(get_all_possible_connections(board_size)))
 
-    X_train, Y_train = load_dataset("hex_9x9_5moves_train.csv", num_rows = num_rows)
-    X_test, Y_test = load_dataset("hex_9x9_5moves_test.csv", num_rows = num_rows)
+    X_train, Y_train = load_dataset("hex_9x9_2moves_train.csv", num_rows = num_rows)
+    X_test, Y_test = load_dataset("hex_9x9_2moves_test.csv", num_rows = num_rows)
     
     # make -1 correspond to class 0, and 1 to 1
     Y_train = np.where(Y_train > 0, 1, 0)
@@ -191,10 +191,10 @@ def train():
 
 
     number_of_clauses = [1000, 5000, 10000, 20000, 30000]
-    s_values = [10, 20, 30] # From 10 to 30
+    s_values = [5, 10, 15, 20, 25, 30] # From 10 to 30
 
     TS = time.strftime("%Y%m%d_%H%M%S")
-    stats_file_name = f"5_before_performance_{TS}.csv"
+    stats_file_name = f"2_before_performance_{TS}.csv"
     print("Appending statistics to", stats_file_name)
     append_to_statistics_file(stats_file_name, "max accuracy", "number of clauses", "s")
 
