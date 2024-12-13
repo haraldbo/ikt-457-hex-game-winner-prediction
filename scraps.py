@@ -166,6 +166,7 @@ def create_number_of_clauses_completed_games_plot():
 #
 #print(position)
 #print(winner)
+
 #display_position(position)
 #
 #print(booleanize_positions_v2(positions[1:2]))
@@ -179,4 +180,16 @@ def create_number_of_clauses_completed_games_plot():
 #
 #create_accuracy_plot("accuracy.png", csv["train accuracy"], csv["test accuracy"])
 #create_dataset_splits()
-create_n_moves_before_the_end_param_search_plot()
+#create_n_moves_before_the_end_param_search_plot()
+
+board = np.array([
+    [0, 0, 0, 0, -1, 0, 0],
+    [0, 0, 0, 0, -1, 0, 0],
+    [0, 1, 1, 1, -1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, -1, 0, 1, 1],
+    [0, 0, 0, -1, 0, 0, 0],
+    [0, 0, -1, 0, 0, 0, 0]
+])
+
+display_position(board)
