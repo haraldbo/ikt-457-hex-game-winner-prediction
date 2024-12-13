@@ -1,3 +1,7 @@
+"""
+Based on connections and empty slots
+"""
+
 from GraphTsetlinMachine.graphs import Graphs
 import numpy as np
 from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
@@ -21,7 +25,7 @@ def default_args(**kwargs):
     parser.add_argument("--number-of-clauses", default=5000, type=int)
     parser.add_argument("--T", default=20000, type=int)
     parser.add_argument("--s", default=17.0, type=float)
-    parser.add_argument("--depth", default=1, type=int)
+    parser.add_argument("--depth", default=2, type=int)
     parser.add_argument("--hypervector-size", default=512, type=int)
     parser.add_argument("--hypervector-bits", default=2, type=int)
     parser.add_argument("--message-size", default=256, type=int)
@@ -190,7 +194,7 @@ def train():
     print("Done.")
 
 
-    number_of_clauses = [(i+1) * 100 for i in range(100)]
+    number_of_clauses = [100, 500, *[i for i in range(1000, 21_000, 1000)]]
 
     TS = time.strftime("%Y%m%d_%H%M%S")
     stats_file_name = f"number_of_clauses_accuracy_{TS}.csv"
@@ -198,10 +202,11 @@ def train():
     append_to_statistics_file(stats_file_name, "max accuracy", "number of clauses")
 
     for nc in number_of_clauses:
+        print("Number of clauses:", number_of_clauses)
         tm = MultiClassGraphTsetlinMachine(
             number_of_clauses = nc,
             T = args.T,
-            s = 12,
+            s = 17,
             number_of_state_bits = args.number_of_state_bits,
             depth = args.depth,
             message_size = args.message_size,
@@ -222,7 +227,7 @@ def train():
             stop_testing = time.time()
             if result_test > max_accuracy:
                 max_accuracy = result_test
-                print("New record accuracy:", max_accuracy)
+                print("New record:", max_accuracy)
             result_train = 100*(tm.predict(graphs_train) == Y_train).mean()
             print("%d %.2f %.2f %.2f %.2f" % (i, result_train, result_test, stop_training-start_training, stop_testing-start_testing))
             

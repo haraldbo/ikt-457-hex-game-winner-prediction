@@ -154,14 +154,15 @@ def train():
 
     num_rows = 1000
     board_size = 9
-    X, Y = load_dataset("hex_9x9_2moves.csv", num_rows = num_rows)
+    X, Y = load_dataset("hex_9x9_5moves.csv", num_rows = num_rows)
     print("Possible connections: ", len(get_all_possible_connections(board_size)))
     print("Total number of symbols: ", len(get_all_symbols(board_size)))
 
     Y = np.where(Y > 0, 1, 0)
 
     # First 80% of data is training, the remaining is test
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.2)
+    X_train, Y_train = load_dataset("hex_9x9_5moves.csv", num_rows = num_rows)
+    X_test, X_test = load_dataset("hex_9x9_2moves.csv", num_rows = num_rows)
 
     print("Train balance:")
     unique, counts = np.unique(Y_train, return_counts=True)

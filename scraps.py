@@ -129,9 +129,9 @@ def create_img_for_2_moves_before_end():
     
 
 def create_n_moves_before_the_end_param_search_plot():
-    csv = pd.read_csv(Path(__file__).parent / "report-performance-analysis" / "5 moves before the end" / "5_before_performance_20241208_130039.csv")
+    csv = pd.read_csv(Path(__file__).parent / "report-performance-analysis" / "2 moves before the end" / "2_before_performance_20241208_152741.csv")
     
-    s_values = [10, 20, 30]
+    s_values = [5, 10, 15, 20, 25, 30]
 
     for s in s_values:
         rows = csv[csv["s"] == s]
