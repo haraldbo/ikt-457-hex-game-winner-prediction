@@ -1,6 +1,6 @@
 
 from utils import load_dataset, display_as_graph, booleanize_positions_3d, \
-    display_position, get_board_at_n_moves_before_the_end, create_n_moves_before_the_end_dataset, \
+    display_board, get_board_at_n_moves_before_the_end, create_n_moves_before_the_end_dataset, \
         save_dataset, create_accuracy_plot
 import matplotlib.pyplot as plt
 import numpy as np
@@ -119,13 +119,13 @@ def create_img_for_2_moves_before_end():
     winner = data[-1]
     history = data[:-1]
     board = get_board_at_n_moves_before_the_end(9, history, 0, -1)
-    display_position(board)
+    display_board(board)
 
     board = get_board_at_n_moves_before_the_end(9, history, 2, -1)
-    display_position(board)
+    display_board(board)
     
     board = get_board_at_n_moves_before_the_end(9, history, 5, -1)
-    display_position(board)
+    display_board(board)
     
 
 def create_n_moves_before_the_end_param_search_plot():
@@ -192,4 +192,16 @@ board = np.array([
     [0, 0, -1, 0, 0, 0, 0]
 ])
 
-display_position(board)
+board_9x9 = np.array([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+])
+
+display_board(board_9x9, show_coordinates=True)

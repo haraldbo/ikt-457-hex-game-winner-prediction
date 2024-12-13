@@ -42,35 +42,38 @@ def load_dataset(file_name, num_rows = None):
             
         return np.array(positions, dtype=np.int8), np.array(winners, dtype=np.int8)
 
-def display_position(position: np.ndarray):
-    img = np.full((300, 500, 3), 255)
+def display_board(board: np.ndarray, show_coordinates = False):
+    COS30 = math.cos(math.pi/6)
+    SIN30 = math.sin(math.pi/6)
 
-    top = 25
-    left = 25
-    line_length = 20
-    cos30 = math.cos(math.pi/6)
-    sin30 = math.sin(math.pi/6)
+    LINE_LENGTH = 60
+    LEFT = 0
+    TOP = int(LINE_LENGTH * COS30)
 
-    board_size = position.shape[0]
+    board_size = board.shape[0]
+    img = np.full((900, 1500, 3), 255)
+    
+
+    coordinates_text = []
     
     def draw_hexagon(x0, y0):    
         lines = [
             # Vertical lines:
-            draw.line(y0, x0, y0 + line_length, x0),
-            draw.line(y0, int(x0 + 2 * cos30 * line_length), 
-                      y0 + line_length, int(x0 + 2 * cos30 * line_length)),
+            draw.line(y0, x0, y0 + LINE_LENGTH, x0),
+            draw.line(y0, int(x0 + 2 * COS30 * LINE_LENGTH), 
+                      y0 + LINE_LENGTH, int(x0 + 2 * COS30 * LINE_LENGTH)),
 
             # Top angled lines
             draw.line(y0, x0, 
-                      int(y0 - sin30 * line_length), int(x0 + cos30 * line_length)),
-            draw.line(int(y0 - sin30 * line_length), int(x0 + cos30 * line_length), 
-                      y0,  int(x0 + 2 * cos30 * line_length)),
+                      int(y0 - SIN30 * LINE_LENGTH), int(x0 + COS30 * LINE_LENGTH)),
+            draw.line(int(y0 - SIN30 * LINE_LENGTH), int(x0 + COS30 * LINE_LENGTH), 
+                      y0,  int(x0 + 2 * COS30 * LINE_LENGTH)),
             
             # Bottom angled lines
-            draw.line(y0 + line_length, x0, 
-                      int(y0 + line_length + sin30 * line_length), int(x0 + cos30 * line_length)),
-            draw.line(int(y0 + line_length + sin30 * line_length), int(x0 + cos30 * line_length), 
-                      y0 + line_length, int(x0 + 2 * cos30 * line_length)),
+            draw.line(y0 + LINE_LENGTH, x0, 
+                      int(y0 + LINE_LENGTH + SIN30 * LINE_LENGTH), int(x0 + COS30 * LINE_LENGTH)),
+            draw.line(int(y0 + LINE_LENGTH + SIN30 * LINE_LENGTH), int(x0 + COS30 * LINE_LENGTH), 
+                      y0 + LINE_LENGTH, int(x0 + 2 * COS30 * LINE_LENGTH)),
         ]
         for (rr, cc) in lines:
             img[rr,cc,:] = 0
@@ -80,63 +83,63 @@ def display_position(position: np.ndarray):
         blue_lines = []
         
         for i in range(board_size):
-            x_top_start = int(left + i * 2 * line_length * cos30)
+            x_top_start = int(LEFT + i * 2 * LINE_LENGTH * COS30)
             # RED LINES:
             red_lines.append(
                 draw.line(
-                    top, x_top_start, 
-                    int(top - line_length * sin30), int(x_top_start + line_length * cos30)
+                    TOP, x_top_start, 
+                    int(TOP - LINE_LENGTH * SIN30), int(x_top_start + LINE_LENGTH * COS30)
                 )
             )
             red_lines.append(
                 draw.line(
-                    int(top - line_length * sin30), int(x_top_start + line_length * cos30), 
-                    top, int(x_top_start + 2 * cos30 * line_length)
+                    int(TOP - LINE_LENGTH * SIN30), int(x_top_start + LINE_LENGTH * COS30), 
+                    TOP, int(x_top_start + 2 * COS30 * LINE_LENGTH)
                 )
             )
-            y_bottom = int(top + (board_size-1) * (line_length + line_length * sin30)) + line_length
-            x_bottom_start = int(left + (board_size-1) * line_length * cos30 + i * 2 * line_length * cos30)
+            y_bottom = int(TOP + (board_size-1) * (LINE_LENGTH + LINE_LENGTH * SIN30)) + LINE_LENGTH
+            x_bottom_start = int(LEFT + (board_size-1) * LINE_LENGTH * COS30 + i * 2 * LINE_LENGTH * COS30)
             red_lines.append(
                 draw.line(
                     y_bottom, x_bottom_start, 
-                    int(y_bottom + line_length * sin30), int(x_bottom_start + line_length * cos30)
+                    int(y_bottom + LINE_LENGTH * SIN30), int(x_bottom_start + LINE_LENGTH * COS30)
                 )
             )
             red_lines.append(
                 draw.line(
-                    int(y_bottom + line_length * sin30), int(x_bottom_start + line_length * cos30), 
-                    y_bottom, int(x_bottom_start + 2 * cos30 * line_length)
+                    int(y_bottom + LINE_LENGTH * SIN30), int(x_bottom_start + LINE_LENGTH * COS30), 
+                    y_bottom, int(x_bottom_start + 2 * COS30 * LINE_LENGTH)
                 )
             )
             
             # BLUES LINES:
-            y_start = top + (1 + sin30) * line_length * i
-            x_left_start = left + cos30 * line_length * i
+            y_start = TOP + (1 + SIN30) * LINE_LENGTH * i
+            x_left_start = LEFT + COS30 * LINE_LENGTH * i
             blue_lines.append(
                 draw.line(
                     int(y_start), int(x_left_start), 
-                    int(y_start + line_length), int(x_left_start)      
+                    int(y_start + LINE_LENGTH), int(x_left_start)      
                 )
             )
             if i < (board_size-1):
                 blue_lines.append(
                     draw.line(
-                        int(y_start + line_length), int(x_left_start), 
-                        int(y_start + line_length * (1 + sin30)), int(x_left_start + line_length * cos30)      
+                        int(y_start + LINE_LENGTH), int(x_left_start), 
+                        int(y_start + LINE_LENGTH * (1 + SIN30)), int(x_left_start + LINE_LENGTH * COS30)      
                     )
                 )
-            x_right_start = left + (board_size * line_length * 2 * cos30) + cos30 * line_length * i
+            x_right_start = LEFT + (board_size * LINE_LENGTH * 2 * COS30) + COS30 * LINE_LENGTH * i
             blue_lines.append(
                 draw.line(
                     int(y_start), int(x_right_start), 
-                    int(y_start + line_length), int(x_right_start)      
+                    int(y_start + LINE_LENGTH), int(x_right_start)      
                 )
             )
             if i < (board_size-1):
                 blue_lines.append(
                     draw.line(
-                        int(y_start + line_length), int(x_right_start), 
-                        int(y_start + line_length * (1 + sin30)), int(x_right_start + line_length * cos30)      
+                        int(y_start + LINE_LENGTH), int(x_right_start), 
+                        int(y_start + LINE_LENGTH * (1 + SIN30)), int(x_right_start + LINE_LENGTH * COS30)      
                     )
                 )
                 
@@ -152,9 +155,9 @@ def display_position(position: np.ndarray):
             img[rr, cc, 2] = 255
             
     def draw_piece(x, y, p):
-        center_x = (left + line_length * cos30) + x * line_length * 2 * cos30 + y * line_length * cos30
-        center_y = (top + line_length / 2) + y * (line_length + sin30 * line_length)
-        rr, cc = draw.disk((int(center_y), int(center_x)), line_length/1.4)
+        center_x = (LEFT + LINE_LENGTH * COS30) + x * LINE_LENGTH * 2 * COS30 + y * LINE_LENGTH * COS30
+        center_y = (TOP + LINE_LENGTH / 2) + y * (LINE_LENGTH + SIN30 * LINE_LENGTH)
+        rr, cc = draw.disk((int(center_y), int(center_x)), LINE_LENGTH/1.4)
 
         img[rr, cc, 0] = 255 if p == -1 else 0 # R
         img[rr, cc, 1] = 0 # G
@@ -163,20 +166,37 @@ def display_position(position: np.ndarray):
             
     for y in range(board_size):
         for x in range(board_size):
+            x_c = int(LEFT + x * 2 * LINE_LENGTH * COS30 + y * LINE_LENGTH * COS30)
+            y_c = int(TOP + y * (LINE_LENGTH + LINE_LENGTH * SIN30))
             draw_hexagon(
-                int(left + x * 2 * line_length * cos30 + y * line_length * cos30), 
-                int(top + y * (line_length + line_length * sin30)))
+                x_c, 
+                y_c
+            )
+            center = (x_c + LINE_LENGTH//2.3, y_c + LINE_LENGTH//1.5)
+            coordinates_text.append((*center, f"{x}, {y}"))
 
     draw_board_edges()
 
     for y in range(board_size):
         for x in range(board_size):
-            p = position[y, x]
+            p = board[y, x]
             if p != 0:
                 draw_piece(x, y, p)
     
+    if show_coordinates:
+        font = {
+       #     'family' : 'normal',
+       # 'weight' : 'bold',
+        'size'   : 8
+        }
+
+        plt.rc('font', **font)
+        for (x, y, text) in coordinates_text:
+            plt.text(x, y, text)
+
     plt.axis('off')
     plt.imshow(img)
+    plt.tight_layout()
     plt.show()
 
 def pop_random(arr: list):
