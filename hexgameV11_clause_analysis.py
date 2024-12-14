@@ -23,7 +23,7 @@ def default_args(**kwargs):
     parser.add_argument("--s", default=10.0, type=float)
     parser.add_argument("--depth", default=1, type=int)
     parser.add_argument("--hypervector-size", default=512, type=int)
-    parser.add_argument("--hypervector-bits", default=1, type=int)
+    parser.add_argument("--hypervector-bits", default=2, type=int)
     parser.add_argument("--message-size", default=256, type=int)
     parser.add_argument("--message-bits", default=1, type=int)
     parser.add_argument('--double-hashing', dest='double_hashing', default=False, action='store_true')
@@ -123,6 +123,7 @@ def write_output_for_interpretability_analysis(tm: MultiClassGraphTsetlinMachine
 
     print("Getting weights")
     weights = tm.get_state()[1].reshape(2, -1)
+    print(weights.shape)
 
     #for i in range(tm.number_of_clauses):
     #        fprint("Clause #%d W:(%d %d)" % (i, weights[0,i], weights[1,i]), end=' ')
@@ -145,27 +146,28 @@ def write_output_for_interpretability_analysis(tm: MultiClassGraphTsetlinMachine
 
 
     def get_symbol_name_from_symbol_id(id):
-        for (k, v) in graphs_test.symbol_id.items():
+        for (k, v) in graphs_train.symbol_id.items():
             if v == id:
                 return k
         raise ValueError(f"Could not find symbol name for symbol {id}")
     
     
     print("Getting clauses")
-    clauses = tm.get_clause_literals(graphs_test.hypervectors)
-    fprint("Symbols:")
-    fprint(graphs_test.symbol_id)
+    clauses = tm.get_clause_literals(graphs_train.hypervectors)
+    #fprint(graphs_test.symbol_id)
     fprint(clauses.shape)
     fprint(clauses[0])
     fprint(clauses)
-    num_symbols = len(graphs_test.symbol_id)
+    num_symbols = len(graphs_train.symbol_id)
     fprint("Clauses:")
     shortest_clause = ""
     shortest_clause_length = float('inf')
     for c in tqdm(range(clauses.shape[0]), desc = "Looping through clauses"):
 
-        # Ignore clauses that are negative for Red player (y = 0)
-        if weights[0, c] < 0:
+        # Ignore clauses that are negative for player
+        
+        if weights[1, c] < 0: # Blue
+        #if weights[0, c] < 0: # Red
             continue
         
         clause_literals = []
@@ -176,11 +178,12 @@ def write_output_for_interpretability_analysis(tm: MultiClassGraphTsetlinMachine
             else:
                 if clauses[c][i] == 1:    
                     clause_literals.append(f"NOT {get_symbol_name_from_symbol_id(i-num_symbols)}")
-        
+
+        clause = f"Clause {c} (length {len(clause_literals)}): " +  " AND ".join(clause_literals)
+        fprint(clause)
         if len(clause_literals) > 0 and len(clause_literals) < shortest_clause_length:
             shortest_clause_length = len(clause_literals)
-            shortest_clause = f"Clause {c}: " +  " AND ".join(clause_literals)
-            fprint(shortest_clause)
+            shortest_clause = clause
         
     fprint(f"Shortest clause (length {shortest_clause_length}): ")
     fprint(shortest_clause)
@@ -207,16 +210,16 @@ def train():
     args = default_args()
     # Create train data
 
-    num_rows = 10_000
-    board_size = 7
+    num_rows = None
+    board_size = 9
     print("Total number of symbols: ", len(get_all_symbols(board_size)))
     print("Possible connections: ", len(get_all_possible_connections(board_size)))
 
-    #X_train, Y_train = load_dataset("hex_9x9_2moves_train.csv", num_rows = num_rows)
-    #X_test, Y_test = load_dataset("hex_9x9_2moves_test.csv", num_rows = num_rows)
+    X_train, Y_train = load_dataset("hex_9x9_2moves_train.csv", num_rows = num_rows)
+    X_test, Y_test = load_dataset("hex_9x9_2moves_test.csv", num_rows = num_rows)
     
-    X, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y, random_state=42)
+    #X, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
+    #X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y, random_state=42)
     
     # make -1 correspond to class 0, and 1 to 1
     Y_train = np.where(Y_train > 0, 1, 0)
@@ -248,7 +251,7 @@ def train():
     print("Done.")
 
 
-    number_of_clauses = [1_000]
+    number_of_clauses = [5000]
 
     TS = time.strftime("%Y%m%d_%H%M%S")
     stats_file_name = f"number_of_clauses_accuracy_{TS}.csv"
@@ -259,7 +262,7 @@ def train():
         tm = MultiClassGraphTsetlinMachine(
             number_of_clauses = nc,
             T = args.T,
-            s = 5,
+            s = 12,
             number_of_state_bits = args.number_of_state_bits,
             depth = args.depth,
             message_size = args.message_size,
