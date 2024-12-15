@@ -2,46 +2,18 @@ from GraphTsetlinMachine.graphs import Graphs
 import numpy as np
 from GraphTsetlinMachine.tm import MultiClassGraphTsetlinMachine
 import time
-import argparse
-from utils import load_dataset, create_graph, get_neighbour_lookup, get_all_board_coordinates, get_all_possible_connections, append_to_statistics_file
+from utils import load_dataset, create_graph, get_all_board_coordinates, get_all_possible_connections, append_to_statistics_file
 from networkx import has_path
 from tqdm import tqdm
-import networkx as nx
-from sklearn.model_selection import train_test_split
 
 RED = -1
 EMPTY = 0
 BLUE = 1
 
-lookups = {}
-
-def default_args(**kwargs):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", default=20, type=int)
-    parser.add_argument("--number-of-clauses", default=1_000, type=int)
-    parser.add_argument("--T", default=20000, type=int)
-    parser.add_argument("--s", default=10.0, type=float)
-    parser.add_argument("--depth", default=1, type=int)
-    parser.add_argument("--hypervector-size", default=512, type=int)
-    parser.add_argument("--hypervector-bits", default=2, type=int)
-    parser.add_argument("--message-size", default=256, type=int)
-    parser.add_argument("--message-bits", default=1, type=int)
-    parser.add_argument('--double-hashing', dest='double_hashing', default=False, action='store_true')
-    parser.add_argument("--max-included-literals", default=None, type=int)
-    parser.add_argument("--number-of-state-bits", default=16, type=int)
-
-    args = parser.parse_args()
-    for key, value in kwargs.items():
-        if key in args.__dict__:
-            setattr(args, key, value)
-    return args
-
-
 def get_all_symbols(board_size):
     symbols = []
     board_coordinates = get_all_board_coordinates(board_size)
     for (y0, x0) in board_coordinates:
-        # Empty slots
         symbols.append(get_red_symbol(y0, x0))
         symbols.append(get_blue_symbol(y0, x0))
         
@@ -115,8 +87,8 @@ def populate_graphs(X: np.ndarray, graphs: Graphs, board_size):
     graphs.encode()
     return graphs
 
-def write_output_for_interpretability_analysis(tm: MultiClassGraphTsetlinMachine, args, graphs_train: Graphs, graphs_test: Graphs, Y_test):
-    file = open("output.txt", "w+")
+def write_output_for_interpretability_analysis(tm: MultiClassGraphTsetlinMachine, graphs_train: Graphs, graphs_test: Graphs, Y_test):
+    file = open("clause_analysis.txt", "w+")
 
     def fprint(line, end = "\n"):
         file.write(f"{line}{end}")
@@ -124,25 +96,6 @@ def write_output_for_interpretability_analysis(tm: MultiClassGraphTsetlinMachine
     print("Getting weights")
     weights = tm.get_state()[1].reshape(2, -1)
     print(weights.shape)
-
-    #for i in range(tm.number_of_clauses):
-    #        fprint("Clause #%d W:(%d %d)" % (i, weights[0,i], weights[1,i]), end=' ')
-    #        l = []
-    #        for k in range(args.hypervector_size * 2):
-    #            if tm.ta_action(0, i, k):
-    #                if k < args.hypervector_size:
-    #                    l.append("x%d" % (k))
-    #                else:
-    #                    l.append("NOT x%d" % (k - args.hypervector_size))
-
-            # for k in range(args.message_size * 2):
-            #     if tm.ta_action(1, i, k):
-            #         if k < args.message_size:
-            #             l.append("c%d" % (k))
-            #         else:
-            #             l.append("NOT c%d" % (k - args.message_size))
-
-    #        fprint(" AND ".join(l))
 
 
     def get_symbol_name_from_symbol_id(id):
@@ -154,12 +107,11 @@ def write_output_for_interpretability_analysis(tm: MultiClassGraphTsetlinMachine
     
     print("Getting clauses")
     clauses = tm.get_clause_literals(graphs_train.hypervectors)
-    #fprint(graphs_test.symbol_id)
     fprint(clauses.shape)
     fprint(clauses[0])
     fprint(clauses)
     num_symbols = len(graphs_train.symbol_id)
-    fprint("Clauses:")
+    fprint("*** Clauses ***")
     shortest_clause = ""
     shortest_clause_length = float('inf')
     for c in tqdm(range(clauses.shape[0]), desc = "Looping through clauses"):
@@ -188,35 +140,22 @@ def write_output_for_interpretability_analysis(tm: MultiClassGraphTsetlinMachine
     fprint(f"Shortest clause (length {shortest_clause_length}): ")
     fprint(shortest_clause)
 
-    # Symbols in a graph gets encoded as a hypervector
-    fprint(graphs_test.hypervectors.shape)
-    fprint(bin(graphs_test.hypervectors[2][0]))
-
-    # Each clause is represented by a hypervector?
-    fprint(tm.hypervectors.shape)
-    fprint(bin(tm.hypervectors[99][0]))
-    fprint(graphs_test.edge_type_id)
-    
-    clause_outputs, class_sums = tm.transform_nodewise(graphs_test)
-    # Lets consider example n in graphs_test:
-    n = 0
-    fprint(f"*** Example {n} ***")
-    fprint(f"Y: {Y_test[n]}")
-    fprint(f"Class sum: {class_sums[n]}")
-
     file.close()
     
 def train():
-    args = default_args()
-    # Create train data
-
-    num_rows = None
     board_size = 9
+    epochs = 10
+    number_of_clauses = [5000]
+    s_values = [12]
+    hv_size = 512
+    hv_bits = 2
+    T_value = 20_000
+    
     print("Total number of symbols: ", len(get_all_symbols(board_size)))
     print("Possible connections: ", len(get_all_possible_connections(board_size)))
 
-    X_train, Y_train = load_dataset("hex_9x9_2moves_train.csv", num_rows = num_rows)
-    X_test, Y_test = load_dataset("hex_9x9_2moves_test.csv", num_rows = num_rows)
+    X_train, Y_train = load_dataset("hex_9x9_2moves_train.csv")
+    X_test, Y_test = load_dataset("hex_9x9_2moves_test.csv")
     
     #X, Y = load_dataset("hex_games_1_000_000_size_7.csv", num_rows = num_rows)
     #X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y, random_state=42)
@@ -239,8 +178,8 @@ def train():
     graphs_train = Graphs(
         X_train.shape[0],
         symbols=get_all_symbols(board_size),
-        hypervector_size=args.hypervector_size,
-        hypervector_bits=args.hypervector_bits,
+        hypervector_size=hv_size,
+        hypervector_bits=hv_bits,
     )
     graphs_train = populate_graphs(X_train, graphs_train, board_size)
     print("Done.")
@@ -250,47 +189,44 @@ def train():
     graphs_test = populate_graphs(X_test, graphs_test, board_size)
     print("Done.")
 
-
-    number_of_clauses = [5000]
-
     TS = time.strftime("%Y%m%d_%H%M%S")
     stats_file_name = f"number_of_clauses_accuracy_{TS}.csv"
-    print("Appending statistics to", stats_file_name)
-    append_to_statistics_file(stats_file_name, "max accuracy", "number of clauses")
+    print("Storing training statistics in ", stats_file_name)
+    append_to_statistics_file(stats_file_name, "max accuracy", "number of clauses", "s")
 
     for nc in number_of_clauses:
-        tm = MultiClassGraphTsetlinMachine(
-            number_of_clauses = nc,
-            T = args.T,
-            s = 12,
-            number_of_state_bits = args.number_of_state_bits,
-            depth = args.depth,
-            message_size = args.message_size,
-            message_bits = args.message_bits,
-            max_included_literals = args.max_included_literals,
-            double_hashing = args.double_hashing,
-            grid=(16*13,1,1),
-            block=(128,1,1)
-        )
-        
-        max_accuracy = 0
-        for i in range(args.epochs):
-            start_training = time.time()
-            tm.fit(graphs_train, Y_train, epochs=1, incremental=True)
-            stop_training = time.time()
-            start_testing = time.time()
-            result_test = 100*(tm.predict(graphs_test) == Y_test).mean()
-            stop_testing = time.time()
-            if result_test > max_accuracy:
-                max_accuracy = result_test
-                print("New record accuracy:", max_accuracy)
-            result_train = 100*(tm.predict(graphs_train) == Y_train).mean()
-            print("%d %.2f %.2f %.2f %.2f" % (i, result_train, result_test, stop_training-start_training, stop_testing-start_testing))
-            
-        append_to_statistics_file(stats_file_name, str(max_accuracy), str(nc))
-        
-    write_output_for_interpretability_analysis(tm, args, graphs_train, graphs_test, Y_test)
+        for s in s_values:
+            tm = MultiClassGraphTsetlinMachine(
+                number_of_clauses = nc,
+                T = T_value,
+                s = s,
+                number_of_state_bits = 16,
+                depth = 1,
+                message_size = 256,
+                message_bits = 1,
+                max_included_literals = None,
+                double_hashing = False,
+                grid=(16*13,1,1),
+                block=(128,1,1)
+            )
 
+            max_accuracy = 0
+            for i in range(epochs):
+                start_training = time.time()
+                tm.fit(graphs_train, Y_train, epochs=1, incremental=True)
+                stop_training = time.time()
+                start_testing = time.time()
+                result_test = 100*(tm.predict(graphs_test) == Y_test).mean()
+                stop_testing = time.time()
+                if result_test > max_accuracy:
+                    max_accuracy = result_test
+                    print("New accuracy record:", max_accuracy)
+                result_train = 100*(tm.predict(graphs_train) == Y_train).mean()
+                print("%d %.2f %.2f %.2f %.2f" % (i, result_train, result_test, stop_training-start_training, stop_testing-start_testing))
+            
+            append_to_statistics_file(stats_file_name, str(max_accuracy), str(nc), str(s))
+        
+    write_output_for_interpretability_analysis(tm, graphs_train, graphs_test, Y_test)
 
 if __name__ == '__main__':  
     train()

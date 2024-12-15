@@ -9,8 +9,6 @@ import networkx as nx
 
 
 neighbours_lookups = {}
-board_coordinates_lookups = {}
-all_possible_connections_lookup = {}
     
 def load_dataset(file_name, num_rows = None):
     """
@@ -281,31 +279,19 @@ def get_neighbour_lookup(board_size):
     return lookup
 
 def get_all_board_coordinates(board_size):
-    global board_coordinates_lookups
-    if board_size in board_coordinates_lookups:
-        return board_coordinates_lookups[board_size]
-
     board_coordinates = []
     for y in range(board_size):
         for x in range(board_size):
             board_coordinates.append((y, x))
-    
-    board_coordinates_lookups[board_size] = board_coordinates
-    
     return board_coordinates
 
 def get_all_possible_connections(board_size):
-    global all_possible_connections_lookup
-    if board_size in all_possible_connections_lookup:
-        return all_possible_connections_lookup[board_size]
-
     board_coordinates = get_all_board_coordinates(board_size)
     all_possible_connections = []
     for i in range(len(board_coordinates)):
         for j in range(i+1, len(board_coordinates)):
             connection = (*board_coordinates[i], *board_coordinates[j])
             all_possible_connections.append(connection)
-    all_possible_connections_lookup[board_size] = all_possible_connections
     return all_possible_connections
 
 def create_graph(board):
@@ -320,8 +306,7 @@ def create_graph(board):
             piece = board[y,x]
             graph.add_node((y, x), piece = piece)
 
-            # piece = 0 means empty and therefore it is not connected
-
+            # piece = 0 means that the cell is empty (not connected)
             if piece == 0:
                 continue
 
@@ -370,9 +355,9 @@ def get_board_at_n_moves_before_the_end(board_size, history, n, beginning_player
         selected_part_of_history = history
     else:
         selected_part_of_history = history[:-n]
-    for mv in selected_part_of_history:
-        y = mv // board_size
-        x = mv % board_size
+    for move in selected_part_of_history:
+        y = move // board_size
+        x = move % board_size
         board[y,x] = current_player
         current_player *= -1
     return board
@@ -382,12 +367,11 @@ def create_n_moves_before_the_end_dataset(file_name, board_size, n, beginning_pl
     boards = []
     winners = []
     for line in history_file:
-        # To only save games once (make sure they are unique)
-        data = line.strip().split(",")
-        data = [int(i) for i in data]
+        moves = line.strip().split(",")
+        moves = [int(i) for i in moves]
         
-        winner = data[-1]
-        history = data[:-1]
+        winner = moves[-1]
+        history = moves[:-1]
         board = get_board_at_n_moves_before_the_end(board_size, history, n, beginning_player)
         boards.append(board)
         winners.append(winner)

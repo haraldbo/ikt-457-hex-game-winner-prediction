@@ -1,22 +1,24 @@
 
-from utils import load_dataset, display_as_graph, booleanize_positions_3d, \
+from utils import load_dataset, booleanize_positions_3d, \
     display_board, get_board_at_n_moves_before_the_end, create_n_moves_before_the_end_dataset, \
-        save_dataset, create_accuracy_plot
+        save_dataset
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
     
-def create3d_board_representation(position):
+def create3d_board_representation(board):
     """
-    Display a (2, 7, 7) representation of the booleanized board
+    Used to create a 3d voxel plot of a booleanized board.
     
-    This method was cooked by modifying 
+    In one of the early prototypes we tried to use 2 layer convolution, 
+    and output from this method was used in the presentation.
+    
+    This method was made by modifying 
     https://matplotlib.org/stable/gallery/mplot3d/voxels_numpy_logo.html#sphx-glr-gallery-mplot3d-voxels-numpy-logo-py
-    
     """
-    position = booleanize_positions_3d(position)
+    board = booleanize_positions_3d(board)
     def explode(data):
         size = np.array(data.shape)*2
         data_e = np.zeros(size - 1, dtype=data.dtype)
@@ -25,10 +27,10 @@ def create3d_board_representation(position):
 
     # build up the numpy logo
     n_voxels = np.zeros((2, 7, 7), dtype=bool)
-    for z in range(position.shape[0]):
-        for y in range(position.shape[1]):
-            for x in range(position.shape[2]):
-                n_voxels[z, y, x] = position[z, y, x] == 1
+    for z in range(board.shape[0]):
+        for y in range(board.shape[1]):
+            for x in range(board.shape[2]):
+                n_voxels[z, y, x] = board[z, y, x] == 1
     facecolors = np.where(n_voxels, '#FFFFFFFF', '#000000FF')
     edgecolors = np.where(n_voxels, '#BFAB6E', '#7D84A6')
     filled = np.ones(n_voxels.shape)
@@ -52,8 +54,6 @@ def create3d_board_representation(position):
     ax.set_aspect('equal')
 
     plt.show()
-
-
 
 def create_table_of_boardv2(board):
     new_board = np.zeros((board.shape[0], board.shape[1] * 2), dtype=int)
@@ -86,6 +86,8 @@ def create_dataset_from_captured_dataset():
     
     bset = set()
     for (b,w) in zip(bs, ws):
+        
+        # Prevent duplicate boards in the dataset
         boardstring = ",".join(b.flatten().astype(str))
         if boardstring in bset:
             continue

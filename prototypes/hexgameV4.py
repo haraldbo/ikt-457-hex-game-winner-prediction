@@ -1,5 +1,5 @@
 """
-Hex game winner prediction by using connectivity and empty cells.
+Hex game winner prediction by using connections and empty cells.
 
 Works with build of GraphTsetlinMachine from commit ed16ef4b574549fa3bb15110dc0cdcb41de8225d of https://github.com/cair/GraphTsetlinMachine
 """
