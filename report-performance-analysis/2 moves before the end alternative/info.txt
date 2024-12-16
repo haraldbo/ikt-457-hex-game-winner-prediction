@@ -1,6 +1,0 @@
-T: 20000
-hv size: 1024
-hv bits: 2
-m size: 256
-m bits: 2
-state bits: 16
