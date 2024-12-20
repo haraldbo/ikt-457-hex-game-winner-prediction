@@ -2,6 +2,9 @@
 
 ![alt text](./images/clause_analysis1.drawio.png)
 
+Screenshot of hex board from https://www.redblobgames.com/grids/hexagons/#map-storage.
+The clause literals of one of the learned rules have been manually added on top.
+
 ## Content
 - [prototypes](./prototypes/): This folder contains earlier versions and experimentation.
 
